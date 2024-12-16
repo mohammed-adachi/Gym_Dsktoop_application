@@ -63,8 +63,16 @@ const App = () => {
       id: "12345",
       name,
       date_naissance: "1990-01-01",
-    };
+      cin: "12345678",
+      typede_sport: "football",
+      profession: "developer",
+      phone: "12345678",
+      adresse: "12345678",
+      photo: "12345678",
+      date_inscrit: new Date().toISOString().split('T')[0],
 
+    };
+console.log(newUser);
     try {
       const response = await invoke("add_new_user", { user: newUser });
       setGreeting(response); // Afficher le message de succès.

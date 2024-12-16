@@ -36,7 +36,7 @@ pub fn init_db() -> Result<Connection> {
         "CREATE TABLE IF NOT EXISTS users (
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
-            date_naissance TEXT NOT NULL,
+            date_naissance TEXT ,
             cin TEXT,
             profession TEXT,
             phone TEXT,
