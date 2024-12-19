@@ -53,14 +53,14 @@ import "./App.css"
 import React, { useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 
-const App = () => {
-  const [name, setName] = useState('');
+const App = () => { };
+/*  const [name, setName] = useState('');
   const [greeting, setGreeting] = useState('');
   const [error, setError] = useState('');
 
   const greet = async () => {
     const newUser = {
-      id: "12345",
+      id: "999999",
       name,
       date_naissance: "1990-01-01",
       cin: "12345678",
@@ -117,7 +117,7 @@ console.log(newUser);
         <h2 style={{ marginTop: '20px', color: 'red' }}>{error}</h2>
       )}
     </div>
-  );
-};
+*/ // );//
+//};//
 
 export default App;
