@@ -8,6 +8,7 @@ import Notification from "./components/Notification/notification"
 import App from "./App";
 import Dashbord from "./page/Dashbord/index";
 import { TauriEvent } from "@tauri-apps/api/event";
+import SportMembers from "./components/sport_list/sport_list";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   // <React.StrictMode>
@@ -20,6 +21,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <Route path="/" element={<App />} />
       <Route path="/inscription" element={<Inscription />} />
       <Route path="/List_de_client" element={<List />} />
+      <Route path="/SportMembers" element={<SportMembers />} />
       <Route path="/Notification" element={<Notification />} />
     </Routes>
   </BrowserRouter>
