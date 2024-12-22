@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Header from "./components/header/index";
 import Inscription from "./components/inscription/inscit";
 import List from "./components/list/list";
-import Notification from "./components/Notification/notification"
+import Notification from "./components/notification/notification"
 import App from "./App";
 import Dashbord from "./page/Dashbord/index";
 import { TauriEvent } from "@tauri-apps/api/event";

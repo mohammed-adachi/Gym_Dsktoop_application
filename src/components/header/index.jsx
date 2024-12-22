@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FaHome, FaUser, FaBell, FaClipboardList, FaChartLine, FaDumbbell, FaSearch, FaBars, FaSignOutAlt, FaCog } from "react-icons/fa";
 import Inscription from "../inscription/inscit";
 import List from "../list/list";
-import Notification from "../Notification/notification";
+import Notification from "../notification/notification";
 import SportMembers from "../sport_list/sport_list" ;
 import { Key } from "lucide-react";
 
@@ -29,7 +29,7 @@ const Header = () => {
         return <List />;
       case "رياضة":
         return <SportMembers />;
-      case "":
+      case "إشعارات":
         return <Notification />;
       default:
         return (
