@@ -5,6 +5,7 @@ import List from "../list/list";
 import Notification from "../notification/notification";
 import SportMembers from "../sport_list/sport_list" ;
 import { Key } from "lucide-react";
+import SportPaye from "../sportPayre/sportPay";
 
 
 const Header = () => {
@@ -31,6 +32,8 @@ const Header = () => {
         return <SportMembers />;
       case "إشعارات":
         return <Notification />;
+      case "لوحة التحكم":
+        return <SportPaye/>;
       default:
         return (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

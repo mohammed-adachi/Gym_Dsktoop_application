@@ -345,19 +345,19 @@ const Inscription = () => {
                   name="date_naissance"
                   value={formData.date_naissance}
                   onChange={handleChange}
-                  required
+          
                   className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-red-500 focus:border-red-500"
                 />
               </div>
               <div>
-                <label htmlFor="cin" className="block text-sm font-medium text-gray-700">CIN</label>
+                <label htmlFor="cin" className="block text-sm font-medium text-gray-700">بطاقة الهوية </label>
                 <input
                   type="text"
                   id="cin"
                   name="cin"
                   value={formData.cin}
                   onChange={handleChange}
-                  required
+                  
                   className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-red-500 focus:border-red-500"
                 />
               </div>
