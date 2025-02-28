@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Trash2, Eye, Filter, UserPlus, X, RefreshCw, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Search, Trash2, Eye, Filter, UserPlus, X, RefreshCw, AlertTriangle, CheckCircle, Edit } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 import { User, Calendar, CreditCard, Briefcase, MapPin, Phone, Clock, Award } from 'lucide-react';
 
@@ -9,7 +9,7 @@ const Modal = ({ isOpen, onClose, user }) => {
 
   // Format dates if needed
   const formatDate = (dateString) => {
-    if (!dateString) return "Non spécifié";
+    if (!dateString) return "غير محدد";
     
     try {
       const date = new Date(dateString);
@@ -25,7 +25,7 @@ const Modal = ({ isOpen, onClose, user }) => {
         {/* Header avec gradient */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 rounded-t-xl">
           <div className="flex justify-between items-center">
-            <h2 className="text-3xl font-bold text-white">Détails du membre</h2>
+            <h2 className="text-3xl font-bold text-white">تفاصيل العضو</h2>
             <button 
               onClick={onClose} 
               className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-all duration-200"
@@ -61,7 +61,7 @@ const Modal = ({ isOpen, onClose, user }) => {
                 </h3>
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Type de sport:</span>
+                    <span className="text-gray-500">نوع الرياضة:</span>
                     <span className="font-medium">{user.sport_type}</span>
                   </div>
                   <div className="flex justify-between">
@@ -167,6 +167,7 @@ const Modal = ({ isOpen, onClose, user }) => {
     </div>
   );
 };
+
 const List = () => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
@@ -177,6 +178,8 @@ const List = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [notification, setNotification] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [userToUpdate, setUserToUpdate] = useState(null);
 
   useEffect(() => {
     fetchUsers();
@@ -204,10 +207,7 @@ const List = () => {
     }
     
     const results = users.filter(user => {
-      // Vérifier si la propriété existe avant de l'utiliser
       if (user[searchType] === undefined) return false;
-      
-      // Convertir en string pour la recherche
       const fieldValue = String(user[searchType]).toLowerCase();
       return fieldValue.includes(searchTerm.toLowerCase());
     });
@@ -225,7 +225,6 @@ const List = () => {
 
   const handleViewDetails = async (user) => {
     try {
-      // Vérifie que user.id est bien une chaîne
       const userId = String(user.id); 
       setIsLoading(true);
       const fetchedUser = await invoke("get_userID", { id: userId });
@@ -239,6 +238,26 @@ const List = () => {
     }
   };
 
+  const handleUpdate = (user) => {
+    setUserToUpdate(user);
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateSubmit = async (updatedUser) => {
+    try {
+      setIsLoading(true);
+      await invoke('update_form_use', { user: updatedUser });
+      showNotification('تم تحديث العضو بنجاح', 'success');
+      fetchUsers();
+      setIsEditModalOpen(false);
+    } catch (error) {
+      console.error('خطأ أثناء تحديث العضو:', error);
+      showNotification('خطأ أثناء تحديث العضو', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleDelete = async (id) => {
     if (!confirm("Êtes-vous sûr de vouloir supprimer ce membre ?")) {
       return;
@@ -247,8 +266,8 @@ const List = () => {
     try {
       setIsLoading(true);
       await invoke('delete_existing_user', { id: id.toString() });
-      showNotification('Membre supprimé avec succès', 'success');
-      fetchUsers(); // Refresh the user list
+      showNotification('تم حذف العضو بنجاح', 'success');
+      fetchUsers();
     } catch (error) {
       console.error('Error deleting user:', error);
       showNotification('Erreur lors de la suppression du membre', 'error');
@@ -257,9 +276,186 @@ const List = () => {
     }
   };
 
+  const EditModal = ({ isOpen, onClose, user, onSubmit }) => {
+    const [formData, setFormData] = useState(user);
+
+    const handleChange = (e) => {
+      const { name, value } = e.target;
+      setFormData(prevState => ({
+        ...prevState,
+        [name]: value,
+      }));
+    };
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      onSubmit(formData);
+    };
+
+    if (!isOpen || !user) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+        <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-200">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 rounded-t-xl">
+            <div className="flex justify-between items-center">
+              <h2 className="text-3xl font-bold text-white">Modifier le membre</h2>
+              <button 
+                onClick={onClose} 
+                className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-all duration-200"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+          </div>
+
+          <div className="p-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">Prénom</label>
+                  <input
+                    type="text"
+                    id="first_name"
+                    name="first_name"
+                    value={formData.first_name}
+                    onChange={handleChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">Nom</label>
+                  <input
+                    type="text"
+                    id="last_name"
+                    name="last_name"
+                    value={formData.last_name}
+                    onChange={handleChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="date_naissance" className="block text-sm font-medium text-gray-700">Date de naissance</label>
+                  <input
+                    type="date"
+                    id="date_naissance"
+                    name="date_naissance"
+                    value={formData.date_naissance}
+                    onChange={handleChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="cin" className="block text-sm font-medium text-gray-700">CIN</label>
+                  <input
+                    type="text"
+                    id="cin"
+                    name="cin"
+                    value={formData.cin}
+                    onChange={handleChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="profession" className="block text-sm font-medium text-gray-700">Profession</label>
+                  <input
+                    type="text"
+                    id="profession"
+                    name="profession"
+                    value={formData.profession}
+                    onChange={handleChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="adresse" className="block text-sm font-medium text-gray-700">Adresse</label>
+                  <input
+                    type="text"
+                    id="adresse"
+                    name="adresse"
+                    value={formData.adresse}
+                    onChange={handleChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Téléphone</label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="sport_type" className="block text-sm font-medium text-gray-700">Type de sport</label>
+                  <select
+                    id="sport_type"
+                    name="sport_type"
+                    value={formData.sport_type}
+                    onChange={handleChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="الأيروبيك">الأيروبيك</option>
+                    <option value="الملاكمة">الملاكمة</option>
+                    <option value="اللياقة البدنية">اللياقة البدنية</option>
+                    <option value="التايكوندو">التايكوندو</option>
+                    <option value="كونتاكت الفول">الفول كونتاكت</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="price" className="block text-sm font-medium text-gray-700">السعر</label>
+                  <input
+                    type="number"
+                    id="price"
+                    name="price"
+                    value={formData.price}
+                                        onChange={handleChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="start_date" className="block text-sm font-medium text-gray-700">تاريخ البدء</label>
+                  <input
+                    type="date"
+                    id="start_date"
+                    name="start_date"
+                    value={formData.start_date}
+                    onChange={handleChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="end_date" className="block text-sm font-medium text-gray-700">تاريخ الانتهاء </label>
+                  <input
+                    type="date"
+                    id="end_date"
+                    name="end_date"
+                    value={formData.end_date}
+                    onChange={handleChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end mt-6">
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg shadow hover:shadow-lg transition-all duration-200"
+                >
+                  Enregistrer les modifications
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const handleAddUser = async () => {
-    // Rediriger vers un formulaire d'ajout serait préférable,
-    // mais puisque nous maintenons la même logique :
     const newUser = {
       id: Date.now().toString(),
       last_name: 'Doe',
@@ -280,8 +476,8 @@ const List = () => {
     try {
       setIsLoading(true);
       await invoke('add_user', { user: newUser });
-      showNotification('Membre ajouté avec succès', 'success');
-      fetchUsers(); // Refresh the user list
+      showNotification('تمت إضافة العضو بنجاح', 'success');
+      fetchUsers();
     } catch (error) {
       console.error('Error adding user:', error);
       showNotification('Erreur lors de l\'ajout du membre', 'error');
@@ -295,16 +491,13 @@ const List = () => {
     setTimeout(() => setNotification(null), 3000);
   };
 
-  // Fonction pour vérifier si l'abonnement est actif
   const isSubscriptionActive = (endDate) => {
     if (!endDate) return false;
     return new Date(endDate) > new Date();
   };
 
-  // Formatage de la date pour l'affichage
   const formatDate = (dateString) => {
-    if (!dateString) return 'Non défini';
-    
+    if (!dateString) return ' غير محدد';
     try {
       const date = new Date(dateString);
       return date.toLocaleDateString('fr-FR');
@@ -481,6 +674,13 @@ const List = () => {
                             <Eye className="h-5 w-5" />
                           </button>
                           <button
+                            onClick={() => handleUpdate(user)}
+                            className="text-yellow-600 hover:text-yellow-900 p-1 hover:bg-yellow-50 rounded"
+                            title="Modifier le membre"
+                          >
+                            <Edit className="h-5 w-5" />
+                          </button>
+                          <button
                             onClick={() => handleDelete(user.id)}
                             className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
                             title="Supprimer le membre"
@@ -498,8 +698,16 @@ const List = () => {
         </div>
       )}
 
-      {/* Le Modal reste inchangé */}
+      {/* Modals */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} user={selectedUser} />
+      {isEditModalOpen && (
+        <EditModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          user={userToUpdate}
+          onSubmit={handleUpdateSubmit}
+        />
+      )}
     </div>
   );
 };
