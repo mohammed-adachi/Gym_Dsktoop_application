@@ -50,7 +50,7 @@ pub fn init_db(conn: &Connection) -> Result<()> {
        conn.execute(
         "CREATE TABLE IF NOT EXISTS user_history (
             id_user TEXT,
-            id_history INTEGER PRIMARY KEY AUTOINCREMENT,
+            id_history INTEGER ,
             start_date TEXT,
             end_date TEXT,
             price REAL,
