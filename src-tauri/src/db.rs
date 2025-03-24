@@ -12,6 +12,7 @@ pub struct User {
     pub profession: Option<String>,
     pub adresse: Option<String>,
     pub registration_date: Option<String>,
+    pub assirance: Option<f64>,
     pub sport_type: Option<String>,
     pub price: f64,
     pub phone: Option<String>,
@@ -39,7 +40,8 @@ pub fn init_db(conn: &Connection) -> Result<()> {
             adresse TEXT,
             photo TEXT,
             phone TEXT,
-            registration_date TEXT NOT NULL,
+            registration_date TEXT,
+            assirance REAL,
             sport_type TEXT NOT NULL,
             price REAL,
             start_date TEXT,
@@ -47,6 +49,12 @@ pub fn init_db(conn: &Connection) -> Result<()> {
         )",
         [],
     )?;
+    // Ajouter la colonne assirance si elle n'existe pas déjà
+    conn.execute(
+        "ALTER TABLE users ADD COLUMN assirance REAL",
+        [],
+    ).ok();
+
        conn.execute(
         "CREATE TABLE IF NOT EXISTS user_history (
             id_user TEXT,
@@ -64,16 +72,27 @@ pub fn init_db(conn: &Connection) -> Result<()> {
     Ok(())
 }
 
+use chrono::{NaiveDate, Duration};
 
+// Fonction pour ajouter 30 jours à une date
+fn add_30_days(date_str: &str) -> Option<String> {
+    if let Ok(date) = NaiveDate::parse_from_str(date_str, "%Y-%m-%d") {
+        let new_date = date + Duration::days(30);
+        Some(new_date.format("%Y-%m-%d").to_string())
+    } else {
+        None
+    }
+}
 
 
 // Insertion d'un utilisateur
 pub fn add_user(conn: &Connection, user: &User) -> Result<()> {
+   
     conn.execute(
         "INSERT INTO users (
             id, last_name, first_name, date_naissance, cin, profession, adresse, 
-            photo, phone, registration_date, sport_type, price, start_date, end_date
-        ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)",
+            photo, phone, registration_date,assirance ,sport_type, price, start_date, end_date
+        ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)",
         params![
             user.id,
             user.last_name,
@@ -85,6 +104,7 @@ pub fn add_user(conn: &Connection, user: &User) -> Result<()> {
             user.photo,
             user.phone,
             user.registration_date,
+            user.assirance,
             user.sport_type,
             user.price,
             user.start_date,
@@ -98,7 +118,7 @@ pub fn add_user(conn: &Connection, user: &User) -> Result<()> {
 pub fn get_users(conn: &Connection) -> Result<Vec<User>> {
     let mut stmt = conn.prepare(
         "SELECT id, last_name, first_name, date_naissance, cin, profession, adresse, 
-        photo, phone, registration_date, sport_type, price, start_date, end_date FROM users",
+        photo, phone, registration_date, sport_type, price, start_date, end_date,assirance FROM users",
     )?;
 
     let users = stmt
@@ -114,6 +134,7 @@ pub fn get_users(conn: &Connection) -> Result<Vec<User>> {
                 photo: row.get(7)?,
                 phone: row.get(8)?,
                 registration_date: row.get(9)?,
+                assirance: row.get(14)?,
                 sport_type: row.get(10)?,
                 price: row.get(11)?,
                 start_date: row.get(12)?,
@@ -218,7 +239,7 @@ pub fn delete_user(conn: &Connection, id: &str) -> Result<()> {
 pub fn get_userParId(conn: &Connection, id: &str) -> Result<User> {
     let mut stmt = conn.prepare(
         "SELECT id, last_name, first_name, date_naissance, cin, profession, adresse, 
-        photo, phone, registration_date, sport_type, price, start_date, end_date FROM users WHERE id = ?1",
+        photo, phone, registration_date, sport_type, price, start_date, end_date,assirance FROM users WHERE id = ?1",
     )?;
 
     let user = stmt
@@ -234,6 +255,7 @@ pub fn get_userParId(conn: &Connection, id: &str) -> Result<User> {
                 photo: row.get(7)?,
                 phone: row.get(8)?,
                 registration_date: row.get(9)?,
+                assirance: row.get(14)?,
                 sport_type: row.get(10)?,
                 price: row.get(11)?,
                 start_date: row.get(12)?,
