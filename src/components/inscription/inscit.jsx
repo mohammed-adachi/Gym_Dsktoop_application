@@ -18,6 +18,7 @@ const Inscription = () => {
     photo: '',
     phone: '',
     registration_date: '',
+    assirance: 0, // Nouveau champ
     sport_type: '',
     price: 0,
     start_date: '',
@@ -33,28 +34,51 @@ const Inscription = () => {
   const endDateRef = useRef(null);
 
   // Initialiser Flatpickr
-  useEffect(() => {
-    // Configuration de Flatpickr
-    const flatpickrOptions = {
-      locale: Arabic, // Localisation en arabe
-      dateFormat: 'd/m/Y', // Format de date personnalisé
-      altInput: true, // Afficher un champ alternatif avec le format personnalisé
-      altFormat: 'd/m/Y', // Format affiché à l'utilisateur
-    };
+ useEffect(() => {
+  const flatpickrOptions = {
+    locale: Arabic,
+    dateFormat: 'd/m/Y',
+    altInput: true,
+    altFormat: 'd/m/Y',
+    onChange: (selectedDates, dateStr) => {
+      setFormData(prev => ({
+        ...prev,
+        start_date: dateStr,
+        end_date: add30Days(dateStr),
+      }));
+    },
+  };
 
-    // Appliquer Flatpickr aux champs de date
-    Flatpickr(dateNaissanceRef.current, flatpickrOptions);
-    Flatpickr(registrationDateRef.current, flatpickrOptions);
-    Flatpickr(startDateRef.current, flatpickrOptions);
-    Flatpickr(endDateRef.current, flatpickrOptions);
-  }, []);
+  Flatpickr(startDateRef.current, flatpickrOptions);
+}, []);
+
+  // Fonction pour ajouter 30 jours à une date
+  const add30Days = (dateStr) => {
+  if (!dateStr) return '';
+  const [day, month, year] = dateStr.split('/');
+  const date = new Date(`${month}/${day}/${year}`);
+  if (isNaN(date.getTime())) return '';
+  date.setDate(date.getDate() + 30);
+  return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+};
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: name === 'price' ? parseFloat(value) : value,
-    }));
+
+    // Mettre à jour formData
+    setFormData((prevState) => {
+      const updatedFormData = {
+        ...prevState,
+        [name]: name === 'price' || name === 'assirance' ? parseFloat(value) : value,
+      };
+
+      // Si start_date est modifié, calculer end_date
+      if (name === 'start_date') {
+        updatedFormData.end_date = add30Days(value);
+      }
+
+      return updatedFormData;
+    });
   };
 
   const handlePhotoChange = (e) => {
@@ -75,9 +99,23 @@ const Inscription = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
+
+    // Validation des dates
+    // if (!formData.start_date || !formData.end_date) {
+    //   alert('Veuillez remplir les dates de début et de fin.');
+    //   return;
+    // }
+
+    // Calculer end_date si start_date est défini
+    const updatedFormData = {
+      ...formData,
+      end_date: formData.start_date ? add30Days(formData.start_date) : formData.end_date,
+    };
+
+    console.log(updatedFormData);
+
     try {
-      const result = await invoke('add_new_user', { user: formData });
+      const result = await invoke('add_new_user', { user: updatedFormData });
       console.log('Réponse du backend:', result);
       alert('تم التسجيل بنجاح !');
     } catch (error) {
@@ -225,19 +263,33 @@ const Inscription = () => {
                   className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-red-500 focus:border-red-500"
                 />
               </div>
-              <div>
-                <label htmlFor="registration_date" className="block text-xl font-medium text-gray-700">تاريخ التسجيل</label>
-                <input
-                  type="text"
-                  id="registration_date"
-                  name="registration_date"
-                  ref={registrationDateRef}
-                  value={formData.registration_date}
-                  onChange={handleChange}
-                  required
-                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-red-500 focus:border-red-500"
-                />
+              {/* Nouvelle section pour registration_date et assirance */}
+              <div className="flex space-x-4">
+                <div className="flex-1">
+                  <label htmlFor="registration_date" className="block text-xl font-medium text-gray-700">تاريخه </label>
+                  <input
+                    type="text"
+                    id="registration_date"
+                    name="registration_date"
+                    ref={registrationDateRef}
+                    value={formData.registration_date}
+                    onChange={handleChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-red-500 focus:border-red-500"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label htmlFor="assirance" className="block text-xl font-medium text-gray-700">التأمين</label>
+                  <input
+                    type="number"
+                    id="assirance"
+                    name="assirance"
+                    value={formData.assirance}
+                    onChange={handleChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-red-500 focus:border-red-500"
+                  />
+                </div>
               </div>
+              {/* Fin de la nouvelle section */}
               <div>
                 <label htmlFor="sport_type" className="block text-xl font-medium text-gray-700">نوع الرياضة</label>
                 <select
@@ -248,7 +300,7 @@ const Inscription = () => {
                   required
                   className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-xl focus:ring-red-500 focus:border-red-500"
                 >
-                  <option value="">Sélectionnez un sport</option>
+                  <option value="">اختر رياضة</option>
                   <option value="الأيروبيك">الأيروبيك</option>
                   <option value="الملاكمة">الملاكمة</option>
                   <option value="اللياقة البدنية">اللياقة البدنية</option>
@@ -268,32 +320,35 @@ const Inscription = () => {
                   className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-red-500 focus:border-red-500"
                 />
               </div>
-              <div>
-                <label htmlFor="start_date" className="block text-xl font-medium text-gray-700">تاريخ البدء</label>
-                <input
-                  type="text"
-                  id="start_date"
-                  name="start_date"
-                  ref={startDateRef}
-                  value={formData.start_date}
-                  onChange={handleChange}
-                  required
-                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-red-500 focus:border-red-500"
-                />
-              </div>
-              <div>
-                <label htmlFor="end_date" className="block text-xl font-medium text-gray-700">تاريخ الانتهاء</label>
-                <input
-                  type="text"
-                  id="end_date"
-                  name="end_date"
-                  ref={endDateRef}
-                  value={formData.end_date}
-                  onChange={handleChange}
-                  required
-                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-xl focus:ring-red-500 focus:border-red-500"
-                />
-              </div>
+            <div>
+  <label htmlFor="start_date" className="block text-xl font-medium text-gray-700">
+    تاريخ الانخراط
+  </label>
+  <input
+    type="text"
+    id="start_date"
+    name="start_date"
+    ref={startDateRef}
+    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-red-500 focus:border-red-500"
+    required
+  />
+</div>
+
+{/* Afficher end_date uniquement si start_date est défini */}
+{formData.start_date && (
+  <div>
+    <label htmlFor="end_date" className="block text-xl font-medium text-gray-700">تاريخ الانتهاء</label>
+    <input
+      type="text"
+      id="end_date"
+      name="end_date"
+      ref={endDateRef}
+      value={formData.end_date}
+      onChange={handleChange}
+      className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-xl focus:ring-red-500 focus:border-red-500"
+    />
+  </div>
+)}
             </div>
 
             <div className="flex justify-end mt-6">

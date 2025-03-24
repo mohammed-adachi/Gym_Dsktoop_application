@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Dumbbell, BoxIcon as Boxing, SpaceIcon as Yoga, BarcodeIcon as Karate, Swords, Bell, Calendar, DollarSign, X } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
-import { format, isPast } from 'date-fns';
+import { format, isPast, parse } from 'date-fns';
 import { motion } from 'framer-motion';
 
 const sports = [
@@ -20,6 +20,12 @@ const SportPaye = () => {
   const [expiredClients, setExpiredClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState(null);
 
+  // Fonction pour parser les dates au format dd/MM/yyyy
+  const parseCustomDate = (dateStr) => {
+    if (!dateStr) return new Date();
+    return parse(dateStr, 'dd/MM/yyyy', new Date());
+  };
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -31,10 +37,13 @@ const SportPaye = () => {
 
       // Filtrer les utilisateurs dont la date de fin est expirée
       const expiredUsers = fetchedUsers.filter(user => {
-        const endDate = new Date(user.end_date);
+        if (!user.end_date) return false;
+        const endDate = parseCustomDate(user.end_date);
         return isPast(endDate);
       });
+      
       setExpiredClients(expiredUsers);
+      console.log('Utilisateurs expirés:', expiredUsers); // Pour débogage
     } catch (error) {
       console.error('Error fetching users:', error);
     }
@@ -79,7 +88,6 @@ const SportPaye = () => {
 
     return (
       <div className="h-screen 100vh bg-gradient-to-br from-gray-120 to-gray-120 text-white p-3 rounded-xl shadow-2xl w-200">
-        {/* Header avec effet de flou */}
         <div className="relative mb-2">
           <h2 className="text-2xl font-bold mb-1 relative z-10 flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -184,16 +192,24 @@ const SportPaye = () => {
                 >
                   <div>
                     <p className="font-medium text-gray-800">{`${client.first_name} ${client.last_name}`}</p>
-                    <p className="text-sm text-gray-600">Expiré le {format(new Date(client.end_date), 'dd/MM/yyyy')}</p>
-                    <p className="text-sm text-gray-600">{client.phone}</p>
+                    <p className="text-sm text-gray-600">انتهى في {client.end_date}</p>
+                    {client.phone && <p className="text-sm text-gray-600">{client.phone}</p>}
                   </div>
-                  <button
-                    onClick={() => setSelectedClient(client)}
-                    className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition duration-300 ease-in-out flex items-center"
-                  >
-                    <Calendar className="mr-2" size={16} />
-                    تحديث
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleViewDetails(client)}
+                      className="bg-purple-500 text-white px-3 py-1 rounded-full hover:bg-purple-600 transition"
+                    >
+                      التفاصيل
+                    </button>
+                    <button
+                      onClick={() => setSelectedClient(client)}
+                      className="bg-blue-500 text-white px-3 py-1 rounded-full hover:bg-blue-600 transition flex items-center"
+                    >
+                      <Calendar className="mr-1" size={16} />
+                      تجديد
+                    </button>
+                  </div>
                 </motion.li>
               ))}
             </ul>
@@ -205,7 +221,7 @@ const SportPaye = () => {
 
       {/* Modal pour mettre à jour le paiement */}
       {selectedClient && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-md w-full">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">تحديث الدفع</h2>
@@ -215,22 +231,43 @@ const SportPaye = () => {
             </div>
             <form onSubmit={(e) => {
               e.preventDefault();
-              const startDate = e.target.startDate.value;
-              const endDate = e.target.endDate.value;
-              const amount = e.target.amount.value;
+              const formData = new FormData(e.target);
+              const startDate = formData.get('startDate');
+              const endDate = formData.get('endDate');
+              const amount = formData.get('amount');
               handleUpdatePayment(selectedClient.id, startDate, endDate, amount);
             }} className="space-y-4">
               <div>
                 <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">تاريخ البدء الجديد:</label>
-                <input type="date" id="startDate" name="startDate" required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" />
+                <input 
+                  type="date" 
+                  id="startDate" 
+                  name="startDate" 
+                  required 
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2 border" 
+                />
               </div>
               <div>
                 <label htmlFor="endDate" className="block text-sm font-medium text-gray-700">تاريخ الانتهاء الجديد:</label>
-                <input type="date" id="endDate" name="endDate" required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" />
+                <input 
+                  type="date" 
+                  id="endDate" 
+                  name="endDate" 
+                  required 
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2 border" 
+                />
               </div>
               <div>
                 <label htmlFor="amount" className="block text-sm font-medium text-gray-700">المبلغ المدفوع (DH):</label>
-                <input type="number" id="amount" name="amount" required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" step="0.01" min="0" />
+                <input 
+                  type="number" 
+                  id="amount" 
+                  name="amount" 
+                  required 
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2 border" 
+                  step="0.01" 
+                  min="0" 
+                />
               </div>
               <button type="submit" className="w-full bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600 transition duration-300 ease-in-out flex items-center justify-center">
                 <DollarSign className="mr-2" size={16} />
@@ -243,7 +280,7 @@ const SportPaye = () => {
 
       {/* Modal pour afficher les détails des paiements */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-gray-600 p-2 rounded-lg max-w-3xl w-full max-h-[80vh] overflow-y-auto">
             {renderPaymentDetails()}
           </div>
