@@ -136,23 +136,20 @@ const Modal = ({ isOpen, onClose, user }) => {
                     <p className="font-medium">{user.phone}</p>
                   </div>
                   
-                  <div className="md:col-span-2">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="p-3 bg-white rounded-lg shadow-sm">
-                        <div className="flex items-center mb-2">
-                          <Clock className="h-5 w-5 text-blue-500 mr-2" />
-                          <span className="text-xl text-gray-500">تأمين</span>
-                        </div>
-                        <p className="font-medium">{user.assirance}</p>
-                      </div>
-                      <div className="p-3 bg-white rounded-lg shadow-sm">
-                        <div className="flex items-center mb-2">
-                          <Clock className="h-5 w-5 text-blue-500 mr-2" />
-                          <span className="text-xl text-gray-500">تاريخه</span>
-                        </div>
-                        <p className="font-medium">{formatDate(user.registration_date)}</p>
-                      </div>
+                  <div className="p-3 bg-white rounded-lg shadow-sm">
+                    <div className="flex items-center mb-2">
+                      <Clock className="h-5 w-5 text-blue-500 mr-2" />
+                      <span className="text-xl text-gray-500">حالة الالتزام</span>
                     </div>
+                    <p className="font-medium">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        user.statut 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {user.statut ? 'ملتزم' : 'غير ملتزم'}
+                      </span>
+                    </p>
                   </div>
                 </div>
               </div>
@@ -210,6 +207,17 @@ const EditModal = ({ isOpen, onClose, user, onSubmit }) => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
+                <label htmlFor="id" className="block text-sm font-medium text-gray-700">ID</label>
+                <input
+                  type="text"
+                  id="id"
+                  name="id"
+                  value={formData.id}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
                 <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">الاسم الشخصي</label>
                 <input
                   type="text"
@@ -232,7 +240,7 @@ const EditModal = ({ isOpen, onClose, user, onSubmit }) => {
                 />
               </div>
               <div>
-                <label htmlFor="date_naissance" className="block text-sm font-medium text-gray-700">Date de naissance</label>
+                <label htmlFor="date_naissance" className="block text-sm font-medium text-gray-700">تاريخ الميلاد</label>
                 <input
                   type="date"
                   id="date_naissance"
@@ -243,8 +251,7 @@ const EditModal = ({ isOpen, onClose, user, onSubmit }) => {
                 />
               </div>
               <div>
-                <label htmlFor="cin" className="block text-sm font-medium text-gray-700">
-بطاقة الهوية</label>
+                <label htmlFor="cin" className="block text-sm font-medium text-gray-700">بطاقة الهوية</label>
                 <input
                   type="text"
                   id="cin"
@@ -326,7 +333,7 @@ const EditModal = ({ isOpen, onClose, user, onSubmit }) => {
                 />
               </div>
               <div>
-                <label htmlFor="end_date" className="block text-sm font-medium text-gray-700">تاريخ الانتهاء </label>
+                <label htmlFor="end_date" className="block text-sm font-medium text-gray-700">تاريخ الانتهاء</label>
                 <input
                   type="date"
                   id="end_date"
@@ -336,6 +343,19 @@ const EditModal = ({ isOpen, onClose, user, onSubmit }) => {
                   className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
+              <div>
+                <label htmlFor="statut" className="block text-sm font-medium text-gray-700">حالة الالتزام</label>
+                <select
+                  id="statut"
+                  name="statut"
+                  value={formData.statut}
+                  onChange={(e) => setFormData({...formData, statut: e.target.value === "true"})}
+                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value={true}>ملتزم</option>
+                  <option value={false}>غير ملتزم</option>
+                </select>
+              </div>
             </div>
 
             <div className="flex justify-end mt-6">
@@ -343,7 +363,7 @@ const EditModal = ({ isOpen, onClose, user, onSubmit }) => {
                 type="submit"
                 className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg shadow hover:shadow-lg transition-all duration-200"
               >
-                Enregistrer les modifications
+                حفظ التعديلات
               </button>
             </div>
           </form>
@@ -388,11 +408,10 @@ const List = () => {
   useEffect(() => {
     let results = users;
     
-    // Filtre par statut
+    // Filtre par statut d'engagement
     if (statusFilter !== 'all') {
       results = results.filter(user => {
-        const isActive = isSubscriptionActive(user.end_date);
-        return statusFilter === 'active' ? isActive : !isActive;
+        return statusFilter === 'committed' ? user.statut : !user.statut;
       });
     }
     
@@ -448,13 +467,22 @@ const List = () => {
   const handleUpdateSubmit = async (updatedUser) => {
     try {
       setIsLoading(true);
-      await invoke('update_form_use', { user: updatedUser });
+      
+      await invoke('update_all_fieds', {
+        oldId: userToUpdate.id,
+        newUser: {
+          ...updatedUser,
+          price: parseFloat(updatedUser.price) || 0,
+          statut: Boolean(updatedUser.statut)
+        }
+      });
+
       showNotification('تم تحديث العضو بنجاح', 'success');
       fetchUsers();
       setIsEditModalOpen(false);
     } catch (error) {
       console.error('خطأ أثناء تحديث العضو:', error);
-      showNotification('خطأ أثناء تحديث العضو', 'error');
+      showNotification(`خطأ أثناء تحديث العضو: ${error}`, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -494,6 +522,7 @@ const List = () => {
       price: 100,
       start_date: new Date().toISOString().split('T')[0],
       end_date: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
+      statut: true // Valeur par défaut: ملتزم
     };
 
     try {
@@ -594,8 +623,8 @@ const List = () => {
               className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
             >
               <option value="all">الكل</option>
-              <option value="active">نشيط</option>
-              <option value="expired">منتهي الصلاحية</option>
+              <option value="committed">ملتزم</option>
+              <option value="not_committed">غير ملتزم</option>
             </select>
             
             <button 
@@ -633,7 +662,7 @@ const List = () => {
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           {filteredUsers.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
-              {searchTerm ? 'Aucun résultat trouvé pour votre recherche.' : 'Aucun membre disponible.'}
+              {searchTerm ? 'لم يتم العثور على نتائج لبحثك.' : 'لا يوجد أعضاء متاحين.'}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -644,7 +673,8 @@ const List = () => {
                     <th scope="col" className="px-6 py-3 text-left text-xl font-medium text-gray-500 uppercase tracking-wider">اسم</th>
                     <th scope="col" className="px-6 py-3 text-left text-xl font-medium text-gray-500 uppercase tracking-wider">نوع الرياضة</th>
                     <th scope="col" className="px-6 py-3 text-left text-xl font-medium text-gray-500 uppercase tracking-wider">تاريخ التأمين</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xl font-medium text-gray-500 uppercase tracking-wider">حالة</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xl font-medium text-gray-500 uppercase tracking-wider">حالة الاشتراك</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xl font-medium text-gray-500 uppercase tracking-wider">حالة الالتزام</th>
                     <th scope="col" className="px-6 py-3 text-left text-xl font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
                   </tr>
                 </thead>
@@ -680,6 +710,15 @@ const List = () => {
                           {isSubscriptionActive(user.end_date) 
                             ? 'نشيط' 
                             : 'منتهي الصلاحية'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          user.statut 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {user.statut ? 'ملتزم' : 'غير ملتزم'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
