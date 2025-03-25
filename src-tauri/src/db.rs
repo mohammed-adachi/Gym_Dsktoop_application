@@ -111,6 +111,16 @@ pub fn add_user(conn: &Connection, user: &User) -> Result<()> {
             user.end_date,
         ],
     )?;
+     conn.execute(
+        "INSERT INTO user_history (id_user, start_date, end_date, price) 
+        VALUES (?1, ?2, ?3, ?4)",
+        params![
+            &user.id,
+            &user.start_date,
+            &user.end_date,
+            &user.price
+        ],
+    )?;
     Ok(())
 }
 
@@ -184,16 +194,7 @@ pub fn update_form_user(conn: &Connection, user: &User) -> Result<()> {
 
 // Mise à jour d'un utilisateur
 pub fn update_user(conn: &Connection, user: &User) -> Result<()> {
-     conn.execute(
-        "INSERT INTO user_history (id_user, start_date, end_date, price) 
-        VALUES (?1, ?2, ?3, ?4)",
-        params![
-            &user.id,
-            &user.start_date,
-            &user.end_date,
-            &user.price
-        ],
-    )?;
+     
 
     conn.execute(
         "UPDATE users SET 
@@ -227,6 +228,16 @@ pub fn update_user(conn: &Connection, user: &User) -> Result<()> {
             user.cin.as_ref(),
             &user.id,
         ),
+    )?;
+    conn.execute(
+        "INSERT INTO user_history (id_user, start_date, end_date, price) 
+        VALUES (?1, ?2, ?3, ?4)",
+        params![
+            &user.id,
+            &user.start_date,
+            &user.end_date,
+            &user.price
+        ],
     )?;
     Ok(())
 }

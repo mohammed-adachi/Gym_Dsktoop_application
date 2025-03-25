@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { format, isPast, parse, addDays } from 'date-fns';
-import { Bell, Calendar, DollarSign, X, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Bell, Calendar, DollarSign, X, AlertTriangle, CheckCircle, Search } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 
 const Notification = () => {
   const [expiredClients, setExpiredClients] = useState([]);
+  const [filteredClients, setFilteredClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState(null);
   const [notification, setNotification] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Fonction pour parser les dates au format dd/MM/yyyy
   const parseCustomDate = (dateString) => {
@@ -38,6 +40,7 @@ const Notification = () => {
         }));
         
         setExpiredClients(formattedUsers);
+        setFilteredClients(formattedUsers);
 
         if (formattedUsers.length > 0) {
           showNotification(`يوجد ${formattedUsers.length} اشتراك منتهي`, 'warning');
@@ -54,6 +57,21 @@ const Notification = () => {
     const interval = setInterval(fetchExpiredClients, 3600000); // Actualiser toutes les heures
     return () => clearInterval(interval);
   }, []);
+
+  // Fonction de recherche
+  useEffect(() => {
+    if (searchTerm === '') {
+      setFilteredClients(expiredClients);
+    } else {
+      const term = searchTerm.toLowerCase();
+      const filtered = expiredClients.filter(client => 
+        client.name.toLowerCase().includes(term) ||
+        client.phone.includes(searchTerm) ||
+        client.id.includes(searchTerm)
+      );
+      setFilteredClients(filtered);
+    }
+  }, [searchTerm, expiredClients]);
 
   const showNotification = (message, type = 'info') => {
     setNotification({ message, type });
@@ -72,6 +90,7 @@ const Notification = () => {
       await invoke('updat_user', { user });
       
       setExpiredClients(prev => prev.filter(c => c.id !== clientId));
+      setFilteredClients(prev => prev.filter(c => c.id !== clientId));
       setSelectedClient(null);
       
       showNotification('تم تحديث الاشتراك بنجاح', 'success');
@@ -149,28 +168,47 @@ const Notification = () => {
         <div className="p-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Liste des clients expirés */}
           <div className="lg:col-span-2">
-            <h2 className="text-lg font-semibold mb-3 text-gray-700 border-b pb-2 flex items-center">
-              <AlertTriangle className="mr-2 text-red-500" size={18} />
-              الاشتراكات المنتهية ({expiredClients.length})
-            </h2>
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="text-lg font-semibold text-gray-700 flex items-center">
+                <AlertTriangle className="mr-2 text-red-500" size={18} />
+                الاشتراكات المنتهية ({filteredClients.length})
+              </h2>
+              
+              {/* Barre de recherche */}
+              <div className="relative w-64">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <Search className="text-gray-400" size={18} />
+                </div>
+                <input
+                  type="text"
+                  placeholder="ابحث بالاسم أو الرقم..."
+                  className="w-full p-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
 
             {isLoading ? (
               <div className="text-center py-8">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-600"></div>
                 <p className="mt-2 text-gray-600">جاري تحميل البيانات...</p>
               </div>
-            ) : expiredClients.length === 0 ? (
+            ) : filteredClients.length === 0 ? (
               <div className="text-center py-8 text-gray-500 bg-gray-50 rounded">
-                لا توجد اشتراكات منتهية حالياً
+                {searchTerm ? 'لا توجد نتائج مطابقة للبحث' : 'لا توجد اشتراكات منتهية حالياً'}
               </div>
             ) : (
               <div className="space-y-3">
-                {expiredClients.map(client => (
+                {filteredClients.map(client => (
                   <div 
                     key={client.id}
                     className="p-3 bg-red-50 rounded-lg border border-red-200 flex justify-between items-center hover:shadow-md transition-shadow"
                   >
                     <div className="flex-1">
+                       <p className="text-sm text-gray-600">
+                          <span className="font-medium">رقم:</span> {client.id}
+                        </p>
                       <p className="font-medium text-gray-800">{client.name}</p>
                       <div className="flex flex-wrap gap-x-4 mt-1">
                         <p className="text-sm text-gray-600">
@@ -182,6 +220,7 @@ const Notification = () => {
                         <p className="text-sm text-gray-600">
                           <span className="font-medium">النوع:</span> {client.membership}
                         </p>
+                       
                       </div>
                     </div>
                     <button
@@ -284,7 +323,7 @@ const Notification = () => {
               </form>
             ) : (
               <div className="text-center py-8 text-gray-500 bg-white rounded">
-                {expiredClients.length > 0 ? (
+                {filteredClients.length > 0 ? (
                   'يرجى اختيار عميل من القائمة'
                 ) : (
                   'لا توجد اشتراكات منتهية'

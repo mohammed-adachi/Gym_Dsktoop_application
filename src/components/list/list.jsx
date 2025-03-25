@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Trash2, Eye, Filter, UserPlus, X, RefreshCw, AlertTriangle, CheckCircle, Edit } from 'lucide-react';
+import { Search, Trash2, Eye, UserPlus, X, RefreshCw, AlertTriangle, CheckCircle, Edit } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 import { User, Calendar, CreditCard, Briefcase, MapPin, Phone, Clock, Award } from 'lucide-react';
 
-// Le composant Modal reste inchangé comme demandé
 const Modal = ({ isOpen, onClose, user }) => {
-  if (!isOpen || !user) return null;
-
-  // Format dates if needed
   const formatDate = (dateString) => {
     if (!dateString) return "غير محدد";
     
@@ -19,10 +15,11 @@ const Modal = ({ isOpen, onClose, user }) => {
     }
   };
 
+  if (!isOpen || !user) return null;
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-200">
-        {/* Header avec gradient */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 rounded-t-xl">
           <div className="flex justify-between items-center">
             <h2 className="text-3xl font-bold text-white">تفاصيل العضو</h2>
@@ -37,7 +34,6 @@ const Modal = ({ isOpen, onClose, user }) => {
         
         <div className="p-6">
           <div className="flex flex-col md:flex-row">
-            {/* Section photo et abonnement */}
             <div className="md:w-1/3 md:pr-6">
               <div className="mb-6">
                 {user.photo ? (
@@ -53,11 +49,10 @@ const Modal = ({ isOpen, onClose, user }) => {
                 )}
               </div>
 
-              {/* Information d'abonnement */}
               <div className="bg-blue-50 rounded-lg p-4 shadow-sm mb-4">
                 <h3 className="font-bold text-blue-700 text-lg mb-3 flex items-center">
                   <Award className="h-5 w-5 mr-2" />
-                  Abonnement
+                  الاشتراك
                 </h3>
                 <div className="space-y-3">
                   <div className="flex justify-between">
@@ -65,31 +60,30 @@ const Modal = ({ isOpen, onClose, user }) => {
                     <span className="font-medium">{user.sport_type}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Prix:</span>
+                    <span className="text-gray-500">المبلغ:</span>
                     <span className="font-medium">{user.price}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Date de début:</span>
-                    <span className="font-medium">{formatDate(user.start_date)}</span>
+                    <span className="text-gray-500">تاريخ الانخراط:</span>
+                    <span className="font-medium">{user.start_date}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Date de fin:</span>
-                    <span className="font-medium">{formatDate(user.end_date)}</span>
+                    <span className="text-gray-500">تاريخ النهاية:</span>
+                    <span className="font-medium">{user.end_date}</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Informations personnelles */}
             <div className="md:w-2/3">
               <div className="bg-gray-50 rounded-lg p-5 shadow-sm">
-                <h3 className="font-bold text-gray-800 text-lg mb-4">Informations personnelles</h3>
+                <h3 className="font-bold text-gray-800 text-xl mb-4">معلومات شخصية</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-3 bg-white rounded-lg shadow-sm">
                     <div className="flex items-center mb-2">
                       <User className="h-5 w-5 text-blue-500 mr-2" />
-                      <span className="text-sm text-gray-500">ID</span>
+                      <span className="text-sm text-gray-500">رقم</span>
                     </div>
                     <p className="font-medium">{user.id}</p>
                   </div>
@@ -97,7 +91,7 @@ const Modal = ({ isOpen, onClose, user }) => {
                   <div className="p-3 bg-white rounded-lg shadow-sm">
                     <div className="flex items-center mb-2">
                       <User className="h-5 w-5 text-blue-500 mr-2" />
-                      <span className="text-sm text-gray-500">Nom complet</span>
+                      <span className="text-xl text-gray-500">الاسم الكامل</span>
                     </div>
                     <p className="font-medium">{`${user.first_name} ${user.last_name}`}</p>
                   </div>
@@ -105,7 +99,7 @@ const Modal = ({ isOpen, onClose, user }) => {
                   <div className="p-3 bg-white rounded-lg shadow-sm">
                     <div className="flex items-center mb-2">
                       <Calendar className="h-5 w-5 text-blue-500 mr-2" />
-                      <span className="text-sm text-gray-500">Date de naissance</span>
+                      <span className="text-xl text-gray-500">تاريخ الميلاد</span>
                     </div>
                     <p className="font-medium">{user.date_naissance}</p>
                   </div>
@@ -113,7 +107,7 @@ const Modal = ({ isOpen, onClose, user }) => {
                   <div className="p-3 bg-white rounded-lg shadow-sm">
                     <div className="flex items-center mb-2">
                       <CreditCard className="h-5 w-5 text-blue-500 mr-2" />
-                      <span className="text-sm text-gray-500">CIN</span>
+                      <span className="text-xl text-gray-500">بطاقة تعريف</span>
                     </div>
                     <p className="font-medium">{user.cin}</p>
                   </div>
@@ -121,7 +115,7 @@ const Modal = ({ isOpen, onClose, user }) => {
                   <div className="p-3 bg-white rounded-lg shadow-sm">
                     <div className="flex items-center mb-2">
                       <Briefcase className="h-5 w-5 text-blue-500 mr-2" />
-                      <span className="text-sm text-gray-500">Profession</span>
+                      <span className="text-xl text-gray-500">مهنة</span>
                     </div>
                     <p className="font-medium">{user.profession}</p>
                   </div>
@@ -129,7 +123,7 @@ const Modal = ({ isOpen, onClose, user }) => {
                   <div className="p-3 bg-white rounded-lg shadow-sm">
                     <div className="flex items-center mb-2">
                       <MapPin className="h-5 w-5 text-blue-500 mr-2" />
-                      <span className="text-sm text-gray-500">Adresse</span>
+                      <span className="text-xl text-gray-500">العنوان</span>
                     </div>
                     <p className="font-medium">{user.adresse}</p>
                   </div>
@@ -137,17 +131,28 @@ const Modal = ({ isOpen, onClose, user }) => {
                   <div className="p-3 bg-white rounded-lg shadow-sm">
                     <div className="flex items-center mb-2">
                       <Phone className="h-5 w-5 text-blue-500 mr-2" />
-                      <span className="text-sm text-gray-500">Téléphone</span>
+                      <span className="text-xl text-gray-500">الهاتف</span>
                     </div>
                     <p className="font-medium">{user.phone}</p>
                   </div>
                   
-                  <div className="p-3 bg-white rounded-lg shadow-sm">
-                    <div className="flex items-center mb-2">
-                      <Clock className="h-5 w-5 text-blue-500 mr-2" />
-                      <span className="text-sm text-gray-500">Date d'inscription</span>
+                  <div className="md:col-span-2">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-3 bg-white rounded-lg shadow-sm">
+                        <div className="flex items-center mb-2">
+                          <Clock className="h-5 w-5 text-blue-500 mr-2" />
+                          <span className="text-xl text-gray-500">تأمين</span>
+                        </div>
+                        <p className="font-medium">{user.assirance}</p>
+                      </div>
+                      <div className="p-3 bg-white rounded-lg shadow-sm">
+                        <div className="flex items-center mb-2">
+                          <Clock className="h-5 w-5 text-blue-500 mr-2" />
+                          <span className="text-xl text-gray-500">تاريخه</span>
+                        </div>
+                        <p className="font-medium">{formatDate(user.registration_date)}</p>
+                      </div>
                     </div>
-                    <p className="font-medium">{user.registration_date}</p>
                   </div>
                 </div>
               </div>
@@ -157,7 +162,7 @@ const Modal = ({ isOpen, onClose, user }) => {
                   onClick={onClose}
                   className="px-5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg shadow hover:shadow-lg transition-all duration-200"
                 >
-                  Fermer
+                  اغلاق
                 </button>
               </div>
             </div>
@@ -168,11 +173,191 @@ const Modal = ({ isOpen, onClose, user }) => {
   );
 };
 
+const EditModal = ({ isOpen, onClose, user, onSubmit }) => {
+  const [formData, setFormData] = useState(user);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  if (!isOpen || !user) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-200">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 rounded-t-xl">
+          <div className="flex justify-between items-center">
+            <h2 className="text-3xl font-bold text-white">تعديل العضو</h2>
+            <button 
+              onClick={onClose} 
+              className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-all duration-200"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+        </div>
+
+        <div className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">الاسم الشخصي</label>
+                <input
+                  type="text"
+                  id="first_name"
+                  name="first_name"
+                  value={formData.first_name}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label htmlFor="last_name" className="block text-xl font-medium text-gray-700">الاسم العائلي</label>
+                <input
+                  type="text"
+                  id="last_name"
+                  name="last_name"
+                  value={formData.last_name}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label htmlFor="date_naissance" className="block text-sm font-medium text-gray-700">Date de naissance</label>
+                <input
+                  type="date"
+                  id="date_naissance"
+                  name="date_naissance"
+                  value={formData.date_naissance}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label htmlFor="cin" className="block text-sm font-medium text-gray-700">
+بطاقة الهوية</label>
+                <input
+                  type="text"
+                  id="cin"
+                  name="cin"
+                  value={formData.cin}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label htmlFor="profession" className="block text-sm font-medium text-gray-700">مهنة</label>
+                <input
+                  type="text"
+                  id="profession"
+                  name="profession"
+                  value={formData.profession}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label htmlFor="adresse" className="block text-sm font-medium text-gray-700">عنوان</label>
+                <input
+                  type="text"
+                  id="adresse"
+                  name="adresse"
+                  value={formData.adresse}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">هاتف</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label htmlFor="sport_type" className="block text-sm font-medium text-gray-700">نوع الرياضة</label>
+                <select
+                  id="sport_type"
+                  name="sport_type"
+                  value={formData.sport_type}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="الأيروبيك">الأيروبيك</option>
+                  <option value="الملاكمة">الملاكمة</option>
+                  <option value="اللياقة البدنية">اللياقة البدنية</option>
+                  <option value="التايكوندو">التايكوندو</option>
+                  <option value="كونتاكت الفول">الفول كونتاكت</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="price" className="block text-sm font-medium text-gray-700">السعر</label>
+                <input
+                  type="number"
+                  id="price"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label htmlFor="start_date" className="block text-sm font-medium text-gray-700">تاريخ البدء</label>
+                <input
+                  type="date"
+                  id="start_date"
+                  name="start_date"
+                  value={formData.start_date}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label htmlFor="end_date" className="block text-sm font-medium text-gray-700">تاريخ الانتهاء </label>
+                <input
+                  type="date"
+                  id="end_date"
+                  name="end_date"
+                  value={formData.end_date}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end mt-6">
+              <button
+                type="submit"
+                className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg shadow hover:shadow-lg transition-all duration-200"
+              >
+                Enregistrer les modifications
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const List = () => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchType, setSearchType] = useState('last_name');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -201,26 +386,43 @@ const List = () => {
   };
 
   useEffect(() => {
-    if (searchTerm === '') {
-      setFilteredUsers(users);
-      return;
+    let results = users;
+    
+    // Filtre par statut
+    if (statusFilter !== 'all') {
+      results = results.filter(user => {
+        const isActive = isSubscriptionActive(user.end_date);
+        return statusFilter === 'active' ? isActive : !isActive;
+      });
     }
     
-    const results = users.filter(user => {
-      if (user[searchType] === undefined) return false;
-      const fieldValue = String(user[searchType]).toLowerCase();
-      return fieldValue.includes(searchTerm.toLowerCase());
-    });
+    // Filtre par recherche
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      results = results.filter(user => 
+        (user.first_name && user.first_name.toLowerCase().includes(term)) ||
+        (user.last_name && user.last_name.toLowerCase().includes(term)) ||
+        (user.phone && user.phone.includes(searchTerm)) ||
+        (user.id && user.id.includes(searchTerm))
+      );
+    }
     
     setFilteredUsers(results);
-  }, [searchTerm, searchType, users]);
+  }, [searchTerm, statusFilter, users]);
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
 
-  const handleSearchTypeChange = (e) => {
-    setSearchType(e.target.value);
+  const handleStatusFilterChange = (e) => {
+    setStatusFilter(e.target.value);
+  };
+
+  const isSubscriptionActive = (endDate) => {
+    if (!endDate) return false;
+    const [day, month, year] = endDate.split('/');
+    const endDateObj = new Date(`${year}-${month}-${day}`);
+    return endDateObj > new Date();
   };
 
   const handleViewDetails = async (user) => {
@@ -276,185 +478,6 @@ const List = () => {
     }
   };
 
-  const EditModal = ({ isOpen, onClose, user, onSubmit }) => {
-    const [formData, setFormData] = useState(user);
-
-    const handleChange = (e) => {
-      const { name, value } = e.target;
-      setFormData(prevState => ({
-        ...prevState,
-        [name]: value,
-      }));
-    };
-
-    const handleSubmit = (e) => {
-      e.preventDefault();
-      onSubmit(formData);
-    };
-
-    if (!isOpen || !user) return null;
-
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-        <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-200">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 rounded-t-xl">
-            <div className="flex justify-between items-center">
-              <h2 className="text-3xl font-bold text-white">Modifier le membre</h2>
-              <button 
-                onClick={onClose} 
-                className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-all duration-200"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-          </div>
-
-          <div className="p-6">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">Prénom</label>
-                  <input
-                    type="text"
-                    id="first_name"
-                    name="first_name"
-                    value={formData.first_name}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">Nom</label>
-                  <input
-                    type="text"
-                    id="last_name"
-                    name="last_name"
-                    value={formData.last_name}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="date_naissance" className="block text-sm font-medium text-gray-700">Date de naissance</label>
-                  <input
-                    type="date"
-                    id="date_naissance"
-                    name="date_naissance"
-                    value={formData.date_naissance}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="cin" className="block text-sm font-medium text-gray-700">CIN</label>
-                  <input
-                    type="text"
-                    id="cin"
-                    name="cin"
-                    value={formData.cin}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="profession" className="block text-sm font-medium text-gray-700">Profession</label>
-                  <input
-                    type="text"
-                    id="profession"
-                    name="profession"
-                    value={formData.profession}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="adresse" className="block text-sm font-medium text-gray-700">Adresse</label>
-                  <input
-                    type="text"
-                    id="adresse"
-                    name="adresse"
-                    value={formData.adresse}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Téléphone</label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="sport_type" className="block text-sm font-medium text-gray-700">Type de sport</label>
-                  <select
-                    id="sport_type"
-                    name="sport_type"
-                    value={formData.sport_type}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="الأيروبيك">الأيروبيك</option>
-                    <option value="الملاكمة">الملاكمة</option>
-                    <option value="اللياقة البدنية">اللياقة البدنية</option>
-                    <option value="التايكوندو">التايكوندو</option>
-                    <option value="كونتاكت الفول">الفول كونتاكت</option>
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="price" className="block text-sm font-medium text-gray-700">السعر</label>
-                  <input
-                    type="number"
-                    id="price"
-                    name="price"
-                    value={formData.price}
-                                        onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="start_date" className="block text-sm font-medium text-gray-700">تاريخ البدء</label>
-                  <input
-                    type="date"
-                    id="start_date"
-                    name="start_date"
-                    value={formData.start_date}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="end_date" className="block text-sm font-medium text-gray-700">تاريخ الانتهاء </label>
-                  <input
-                    type="date"
-                    id="end_date"
-                    name="end_date"
-                    value={formData.end_date}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end mt-6">
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg shadow hover:shadow-lg transition-all duration-200"
-                >
-                  Enregistrer les modifications
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   const handleAddUser = async () => {
     const newUser = {
       id: Date.now().toString(),
@@ -491,30 +514,39 @@ const List = () => {
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const isSubscriptionActive = (endDate) => {
-    if (!endDate) return false;
-    return new Date(endDate) > new Date();
-  };
-
   const formatDate = (dateString) => {
-    if (!dateString) return ' غير محدد';
+    if (!dateString) return "غير محدد";
+
+    if (typeof dateString === 'string' && dateString.includes('/')) {
+      const [day, month, year] = dateString.split('/');
+      if (day && month && year) {
+        return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+      }
+    }
+
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('fr-FR');
+      if (!isNaN(date.getTime())) {
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+      }
     } catch (error) {
-      return dateString;
+      console.error("Erreur de formatage de date :", error);
     }
+
+    return dateString || "غير محدد";
   };
 
   return (
     <div className="p-4 bg-gray-50 min-h-screen">
-      {/* Header avec titre et compteur */}
       <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-800">Liste des membres</h1>
+          <h1 className="text-2xl font-bold text-gray-800">قائمة الأعضاء</h1>
           <div className="flex items-center">
             <div className="bg-blue-100 text-blue-800 py-1 px-3 rounded-full text-sm mr-2">
-              Total: {users.length} membres
+              المجموع: {filteredUsers.length} أعضاء
             </div>
             <button 
               onClick={fetchUsers} 
@@ -527,7 +559,6 @@ const List = () => {
         </div>
       </div>
 
-      {/* Notification */}
       {notification && (
         <div className={`mb-4 p-3 rounded-lg flex items-center ${
           notification.type === 'error' ? 'bg-red-100 text-red-800' : 
@@ -541,7 +572,6 @@ const List = () => {
         </div>
       )}
 
-      {/* Barre de recherche et filtres */}
       <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
         <div className="flex flex-col md:flex-row md:items-center gap-3">
           <div className="relative flex-grow">
@@ -550,7 +580,7 @@ const List = () => {
             </div>
             <input
               type="text"
-              placeholder="Rechercher un membre..."
+              placeholder="ابحث باسم العضو أو رقم ..."
               value={searchTerm}
               onChange={handleSearch}
               className="w-full pl-10 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
@@ -559,23 +589,14 @@ const List = () => {
           
           <div className="flex gap-2">
             <select
-              value={searchType}
-              onChange={handleSearchTypeChange}
+              value={statusFilter}
+              onChange={handleStatusFilterChange}
               className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
             >
-              <option value="last_name">Nom</option>
-              <option value="first_name">Prénom</option>
-              <option value="id">ID</option>
-              <option value="sport_type">Sport</option>
-              <option value="phone">Téléphone</option>
+              <option value="all">الكل</option>
+              <option value="active">نشيط</option>
+              <option value="expired">منتهي الصلاحية</option>
             </select>
-            
-            <button 
-              className="p-2 border border-gray-300 rounded-lg hover:bg-gray-100"
-              title="Filtres avancés"
-            >
-              <Filter className="h-5 w-5" />
-            </button>
             
             <button 
               onClick={handleAddUser} 
@@ -583,20 +604,18 @@ const List = () => {
               title="Ajouter un nouveau membre"
             >
               <UserPlus className="h-5 w-5" />
-              <span className="hidden md:inline">Ajouter</span>
+              <span className="hidden md:inline">أضف عضوًا</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Affichage de l'état de chargement */}
       {isLoading && (
         <div className="bg-white p-10 rounded-lg shadow-sm mb-4 flex justify-center">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
         </div>
       )}
 
-      {/* Affichage des erreurs */}
       {error && !isLoading && (
         <div className="bg-red-100 text-red-800 p-4 rounded-lg shadow-sm mb-4 flex items-center">
           <AlertTriangle className="h-5 w-5 mr-2" />
@@ -610,7 +629,6 @@ const List = () => {
         </div>
       )}
 
-      {/* Table des membres */}
       {!isLoading && !error && (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           {filteredUsers.length === 0 ? (
@@ -622,12 +640,12 @@ const List = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sport</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Inscription</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xl font-medium text-gray-500 uppercase tracking-wider">رقم</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xl font-medium text-gray-500 uppercase tracking-wider">اسم</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xl font-medium text-gray-500 uppercase tracking-wider">نوع الرياضة</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xl font-medium text-gray-500 uppercase tracking-wider">تاريخ التأمين</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xl font-medium text-gray-500 uppercase tracking-wider">حالة</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xl font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -660,8 +678,8 @@ const List = () => {
                             : 'bg-red-100 text-red-800'
                         }`}>
                           {isSubscriptionActive(user.end_date) 
-                            ? 'Actif' 
-                            : 'Expiré'}
+                            ? 'نشيط' 
+                            : 'منتهي الصلاحية'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -698,7 +716,6 @@ const List = () => {
         </div>
       )}
 
-      {/* Modals */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} user={selectedUser} />
       {isEditModalOpen && (
         <EditModal
