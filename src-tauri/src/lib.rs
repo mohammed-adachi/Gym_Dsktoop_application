@@ -8,7 +8,7 @@ use std::sync::Mutex;
 use tauri::State;
 
 mod db;
-use db::{add_user, delete_user, get_users, init_db, update_user, User, get_userParId ,user_histId, UserHistory, update_form_user};
+use db::{add_user,UserUpdate, delete_user, get_users, init_db, update_user, User, get_userParId ,user_histId, UserHistory, update_form_user,update_all_user_fields};
 
 // État global pour stocker la connexion à la base de données
 struct AppState {
@@ -71,6 +71,16 @@ async fn update_form_use(user: User, state: State<'_, AppState>) -> Result<(), S
     let conn = state.db.lock().unwrap();
     update_form_user(&conn, &user).map_err(|e| e.to_string())
 }
+#[tauri::command]
+async fn update_all_fieds(
+    oldId: String,  // Notez le 'I' majuscule
+    newUser: User,  // Notez le 'U' majuscule
+    state: State<'_, AppState>
+) -> Result<(), String> {
+    let conn = state.db.lock().unwrap();
+    db::update_all_user_fields(&conn, &oldId, &newUser)
+        .map_err(|e| e.to_string())
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -93,6 +103,7 @@ pub fn run() {
             updat_user,
             get_all_users,
             get_userID,
+            update_all_fieds,
             delete_existing_user,
             user_historyId,
             update_form_use

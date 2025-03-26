@@ -18,6 +18,8 @@ pub struct User {
     pub phone: Option<String>,
     pub start_date: Option<String>,
     pub end_date: Option<String>,
+    pub statut: Option<bool>, // Nouveau champ booléen optionnel
+
 }
 #[derive(Debug, Serialize, Deserialize,Clone)]
 pub struct UserHistory {
@@ -45,7 +47,9 @@ pub fn init_db(conn: &Connection) -> Result<()> {
             sport_type TEXT NOT NULL,
             price REAL,
             start_date TEXT,
-            end_date TEXT
+            end_date TEXT,
+            statut INTEGER DEFAULT 1  -- 1 = true par défaut
+
         )",
         [],
     )?;
@@ -91,8 +95,8 @@ pub fn add_user(conn: &Connection, user: &User) -> Result<()> {
     conn.execute(
         "INSERT INTO users (
             id, last_name, first_name, date_naissance, cin, profession, adresse, 
-            photo, phone, registration_date,assirance ,sport_type, price, start_date, end_date
-        ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)",
+            photo, phone, registration_date,assirance ,sport_type, price, start_date, end_date,statut
+        ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15,?16)",
         params![
             user.id,
             user.last_name,
@@ -109,6 +113,7 @@ pub fn add_user(conn: &Connection, user: &User) -> Result<()> {
             user.price,
             user.start_date,
             user.end_date,
+             1i32, // Valeur pour statut (1 = true)
         ],
     )?;
      conn.execute(
@@ -128,7 +133,7 @@ pub fn add_user(conn: &Connection, user: &User) -> Result<()> {
 pub fn get_users(conn: &Connection) -> Result<Vec<User>> {
     let mut stmt = conn.prepare(
         "SELECT id, last_name, first_name, date_naissance, cin, profession, adresse, 
-        photo, phone, registration_date, sport_type, price, start_date, end_date,assirance FROM users",
+        photo, phone, registration_date, sport_type, price, start_date, end_date,assirance,statut FROM users",
     )?;
 
     let users = stmt
@@ -149,6 +154,7 @@ pub fn get_users(conn: &Connection) -> Result<Vec<User>> {
                 price: row.get(11)?,
                 start_date: row.get(12)?,
                 end_date: row.get(13)?,
+                statut: row.get(15)?,
             })
         })?
         .collect::<Result<Vec<User>>>()?;
@@ -158,21 +164,25 @@ pub fn get_users(conn: &Connection) -> Result<Vec<User>> {
 pub fn update_form_user(conn: &Connection, user: &User) -> Result<()> {
     conn.execute(
         "UPDATE users SET 
-            last_name = COALESCE(?1, last_name), 
-            first_name = COALESCE(?2, first_name),
-            date_naissance = COALESCE(?3, date_naissance),
-            cin = COALESCE(?4, cin),
-            profession = COALESCE(?5, profession), 
-            adresse = COALESCE(?6, adresse),
-            photo = COALESCE(?7, photo), 
-            phone = COALESCE(?8, phone),
-            registration_date = COALESCE(?9, registration_date),
-            sport_type = COALESCE(?10, sport_type),
-            price = COALESCE(?11, price),
-            start_date = COALESCE(?12, start_date),
-            end_date = COALESCE(?13, end_date)
-        WHERE id = ?14",
-        (
+            id = ?1,
+            last_name = ?2, 
+            first_name = ?3,
+            date_naissance = ?4,
+            cin = ?5,
+            profession = ?6, 
+            adresse = ?7,
+            photo = ?8, 
+            phone = ?9,
+            registration_date = ?10,
+            assirance = ?11,
+            sport_type = ?12,
+            price = ?13,
+            start_date = ?14,
+            end_date = ?15,
+            statut = ?16
+        WHERE id = ?17",
+        params![
+            &user.id,
             user.last_name.as_ref(),
             user.first_name.as_ref(),
             user.date_naissance.as_ref(),
@@ -182,16 +192,73 @@ pub fn update_form_user(conn: &Connection, user: &User) -> Result<()> {
             user.photo.as_ref(),
             user.phone.as_ref(),
             user.registration_date.as_ref(),
+            user.assirance.as_ref(),
             user.sport_type.as_ref(),
             &user.price,
             user.start_date.as_ref(),
             user.end_date.as_ref(),
-            &user.id,
-        ),
+            user.statut.map(|b| b as i32), // Convertit Option<bool> en Option<i32>
+            &user.id // ID original pour la condition WHERE
+        ],
     )?;
     Ok(())
 }
-
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserUpdate {
+    pub old_id: String,
+    pub new_data: User,
+}
+pub fn update_all_user_fields(conn: &Connection, old_id: &str, new_user: &User) -> Result<()> {
+    conn.execute(
+        "UPDATE users SET 
+            id = ?1,
+            photo = ?2,
+            last_name = ?3, 
+            first_name = ?4,
+            date_naissance = ?5,
+            cin = ?6,
+            profession = ?7, 
+            adresse = ?8,
+            phone = ?9,
+            registration_date = ?10,
+            assirance = ?11,
+            sport_type = ?12,
+            price = ?13,
+            start_date = ?14,
+            end_date = ?15,
+            statut = ?16
+        WHERE id = ?17",
+        params![
+            &new_user.id,
+            new_user.photo.as_ref(),
+            new_user.last_name.as_ref(),
+            new_user.first_name.as_ref(),
+            new_user.date_naissance.as_ref(),
+            new_user.cin.as_ref(),
+            new_user.profession.as_ref(),
+            new_user.adresse.as_ref(),
+            new_user.phone.as_ref(),
+            new_user.registration_date.as_ref(),
+            new_user.assirance,
+            new_user.sport_type.as_ref(),
+            new_user.price,
+            new_user.start_date.as_ref(),
+            new_user.end_date.as_ref(),
+            new_user.statut.map(|b| b as i32),
+            old_id
+        ],
+    )?;
+    
+    // Mettre à jour les références dans user_history
+    if old_id != new_user.id {
+        conn.execute(
+            "UPDATE user_history SET id_user = ?1 WHERE id_user = ?2",
+            params![&new_user.id, old_id],
+        )?;
+    }
+    
+    Ok(())
+}
 // Mise à jour d'un utilisateur
 pub fn update_user(conn: &Connection, user: &User) -> Result<()> {
      
@@ -250,7 +317,7 @@ pub fn delete_user(conn: &Connection, id: &str) -> Result<()> {
 pub fn get_userParId(conn: &Connection, id: &str) -> Result<User> {
     let mut stmt = conn.prepare(
         "SELECT id, last_name, first_name, date_naissance, cin, profession, adresse, 
-        photo, phone, registration_date, sport_type, price, start_date, end_date,assirance FROM users WHERE id = ?1",
+        photo, phone, registration_date, sport_type, price, start_date, end_date,assirance,statut FROM users WHERE id = ?1",
     )?;
 
     let user = stmt
@@ -271,6 +338,7 @@ pub fn get_userParId(conn: &Connection, id: &str) -> Result<User> {
                 price: row.get(11)?,
                 start_date: row.get(12)?,
                 end_date: row.get(13)?,
+                statut: row.get(15)?,
             })
         })?
         .collect::<Result<Vec<User>>>()?;
