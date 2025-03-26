@@ -185,7 +185,7 @@ const sports = [
   { name: "الملاكمة", icon: Boxing },
   { name: "اللياقة البدنية", icon: Dumbbell },
   { name: "التايكوندو", icon: Karate },
-  { name: "الفول كونتاكت", icon: Swords },
+  { name: "كونتاكت الفول", icon: Swords },
 ];
 
 const SportMembers = () => {
@@ -222,6 +222,30 @@ const SportMembers = () => {
       console.error('Error fetching users:', error);
     }
   };
+  // Fonction pour formater la date de manière cohérente
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A';
+  
+  try {
+    // Essayez de parser différentes formes de dates
+    const date = new Date(dateString);
+    
+    // Si la date est invalide
+    if (isNaN(date.getTime())) {
+      return dateString; // Retourne la chaîne originale si le parsing échoue
+    }
+    
+    // Formater en YYYY-MM-DD pour la cohérence
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  } catch (error) {
+    console.error("Erreur de formatage de date:", error);
+    return dateString; // Retourne la chaîne originale en cas d'erreur
+  }
+};
 
   const filteredUsers = selectedSport
     ? users.filter(user => user.sport_type === selectedSport)
@@ -274,7 +298,7 @@ const SportMembers = () => {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-green-400" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
                     </svg>
-                    {payment.start_date}
+                    {formatDate(payment.start_date)}
                   </div>
                 </div>
                 
@@ -284,7 +308,7 @@ const SportMembers = () => {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-red-400" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
                     </svg>
-                    {payment.end_date}
+                     {formatDate(payment.end_date)}
                   </div>
                 </div>
               </div>
@@ -374,8 +398,8 @@ const SportMembers = () => {
                     <td className="py-2 px-4 border-b">{user.phone}</td>
                     <td className="py-2 px-4 border-b">{user.registration_date}</td>
                     <td className="py-2 px-4 border-b">{user.price}</td>
-                    <td className="py-2 px-4 border-b">{user.start_date}</td>
-                    <td className="py-2 px-4 border-b">{user.end_date}</td>
+                    <td className="py-2 px-4 border-b">{formatDate(user.start_date)}</td>
+                    <td className="py-2 px-4 border-b">{formatDate(user.end_date)}</td>
                     <td className="py-2 px-4 border-b">
                       <button 
                         onClick={() => handleViewDetails(user)}

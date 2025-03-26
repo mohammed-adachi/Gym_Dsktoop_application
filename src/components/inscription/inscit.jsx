@@ -305,7 +305,7 @@ const Inscription = () => {
                   <option value="الملاكمة">الملاكمة</option>
                   <option value="اللياقة البدنية">اللياقة البدنية</option>
                   <option value="التايكوندو">التايكوندو</option>
-                  <option value="كونتاكت الفول">الفول كونتاكت</option>
+                  <option value="الفول كونتاكت">الفول كونتاكت</option>
                 </select>
               </div>
               <div>

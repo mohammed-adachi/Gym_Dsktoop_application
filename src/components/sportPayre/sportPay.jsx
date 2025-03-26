@@ -20,10 +20,33 @@ const SportPaye = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Parser les dates dd/MM/yyyy
-  const parseCustomDate = (dateStr) => {
+  // Fonction pour parser les dates dans différents formats
+  const parseAnyDate = (dateStr) => {
     if (!dateStr) return new Date();
-    return parse(dateStr, 'dd/MM/yyyy', new Date());
+    
+    // Essayer différents formats de date
+    const formats = [
+      'dd/MM/yyyy', // 06/02/2025
+      'dd-MM-yyyy', // 06-02-2025
+      'yyyy/MM/dd', // 2025/02/06
+      'yyyy-MM-dd', // 2025-02-06
+      'MM/dd/yyyy', // 02/06/2025
+      'MM-dd-yyyy'  // 02-06-2025
+    ];
+    
+    for (const format of formats) {
+      try {
+        const parsed = parse(dateStr, format, new Date());
+        if (!isNaN(parsed.getTime())) {
+          return parsed;
+        }
+      } catch (e) {
+        continue;
+      }
+    }
+    
+    // Si aucun format ne fonctionne, retourner la date actuelle
+    return new Date();
   };
 
   useEffect(() => {
@@ -34,7 +57,7 @@ const SportPaye = () => {
     try {
       const users = await invoke('get_all_users');
       const expired = users.filter(user => {
-        return user.end_date && isPast(parseCustomDate(user.end_date));
+        return user.end_date && isPast(parseAnyDate(user.end_date));
       });
       setExpiredClients(expired);
     } catch (error) {
@@ -42,23 +65,25 @@ const SportPaye = () => {
     }
   };
 
-  // Filtrer les clients expirés pour le sport sélectionné et la recherche
+  // Fonction pour afficher la date dans son format original
+  const displayDate = (dateStr) => {
+    return dateStr || 'غير محدد';
+  };
+
   const getFilteredClients = () => {
     let filtered = expiredClients;
     
-    // Filtre par sport
     if (selectedSport) {
       filtered = filtered.filter(client => client.sport_type === selectedSport);
     }
     
-    // Filtre par recherche (nom ou numéro)
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(client => 
         (client.first_name?.toLowerCase().includes(term)) ||
         (client.last_name?.toLowerCase().includes(term)) ||
-        (client.phone?.includes(searchTerm)) || // Recherche exacte pour le numéro
-        (client.id?.includes(searchTerm)) // Recherche par ID si nécessaire
+        (client.phone?.includes(searchTerm)) ||
+        (client.id?.includes(searchTerm))
       );
     }
     
@@ -96,7 +121,6 @@ const SportPaye = () => {
     <div className="p-6 max-w-6xl mx-auto">
       <h1 className="text-3xl font-bold mb-6 text-center">الأعضاء حسب الرياضة</h1>
       
-      {/* Boutons des sports */}
       <div className="flex flex-wrap justify-center gap-4 mb-8">
         {sports.map((sport) => (
           <button
@@ -112,27 +136,24 @@ const SportPaye = () => {
         ))}
       </div>
 
-      {/* Champ de recherche (visible seulement quand un sport est sélectionné) */}
       {selectedSport && (
-      <div className="mb-6 relative flex flex-col items-end">
-  <div className="absolute inset-y-0 right-2 flex items-center pr-3 pointer-events-none">
-    <Search className="text-gray-400" />
-  </div>
-  <input
-    type="text"
-    placeholder="ابحث باسم العضو أو رقم ..."
-    className="w-1/3 p-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-right"
-    value={searchTerm}
-    onChange={(e) => setSearchTerm(e.target.value)}
-  />
-  <p className="text-xl text-gray-500 mt-1 text-right">
-    يمكنك البحث بالاسم أو رقم 
-  </p>
-</div>
-
+        <div className="mb-6 relative flex flex-col items-end">
+          <div className="absolute inset-y-0 right-2 flex items-center pr-3 pointer-events-none">
+            <Search className="text-gray-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="ابحث باسم العضو أو رقم ..."
+            className="w-1/3 p-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-right"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <p className="text-xl text-gray-500 mt-1 text-right">
+            يمكنك البحث بالاسم أو رقم 
+          </p>
+        </div>
       )}
 
-      {/* Liste des membres expirés */}
       {selectedSport ? (
         <div>
           <h2 className="text-2xl font-semibold mb-4">العملاء المنتهية عضويتهم في {selectedSport}</h2>
@@ -152,12 +173,17 @@ const SportPaye = () => {
                 >
                   <div>
                     <p className="font-medium text-gray-800">{client.first_name} {client.last_name}</p>
-                    <p className="text-sm text-gray-600">انتهى في {client.end_date}</p>
+                    <p className="text-sm text-gray-600">انتهى في {displayDate(client.end_date)}</p>
                     {client.phone && <p className="text-sm text-gray-600">الهاتف: {client.phone}</p>}
                     {client.id && <p className="text-sm text-gray-600">الرقم: {client.id}</p>}
                   </div>
                   <div className="flex gap-2">
-                    
+                    <button
+                      onClick={() => handleViewDetails(client)}
+                      className="bg-gray-500 text-white px-3 py-1 rounded-full hover:bg-gray-600 transition flex items-center"
+                    >
+                      التفاصيل
+                    </button>
                     <button
                       onClick={() => setSelectedClient(client)}
                       className="bg-blue-500 text-white px-3 py-1 rounded-full hover:bg-blue-600 transition flex items-center"
@@ -175,7 +201,6 @@ const SportPaye = () => {
         <p className="text-center text-gray-500 mt-4">يرجى اختيار رياضة لعرض الأعضاء المنتهية عضويتهم</p>
       )}
 
-      {/* Modal de mise à jour */}
       {selectedClient && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-md w-full">
@@ -238,7 +263,6 @@ const SportPaye = () => {
         </div>
       )}
 
-      {/* Modal des détails */}
       {isModalOpen && selectedUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-gray-700 p-6 rounded-lg max-w-md w-full max-h-[80vh] overflow-y-auto text-white">
@@ -259,11 +283,11 @@ const SportPaye = () => {
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <p className="text-gray-400">من</p>
-                      <p>{payment.start_date}</p>
+                      <p>{displayDate(payment.start_date)}</p>
                     </div>
                     <div>
                       <p className="text-gray-400">إلى</p>
-                      <p>{payment.end_date}</p>
+                      <p>{displayDate(payment.end_date)}</p>
                     </div>
                   </div>
                 </div>

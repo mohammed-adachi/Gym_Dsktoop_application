@@ -307,7 +307,7 @@ const EditModal = ({ isOpen, onClose, user, onSubmit }) => {
                   <option value="الملاكمة">الملاكمة</option>
                   <option value="اللياقة البدنية">اللياقة البدنية</option>
                   <option value="التايكوندو">التايكوندو</option>
-                  <option value="كونتاكت الفول">الفول كونتاكت</option>
+                  <option value="الفول كونتاكت">الفول كونتاكت</option>
                 </select>
               </div>
               <div>
@@ -373,7 +373,7 @@ const EditModal = ({ isOpen, onClose, user, onSubmit }) => {
   );
 };
 
-const List = () => {
+const Lists = () => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -438,11 +438,23 @@ const List = () => {
   };
 
   const isSubscriptionActive = (endDate) => {
-    if (!endDate) return false;
-    const [day, month, year] = endDate.split('/');
-    const endDateObj = new Date(`${year}-${month}-${day}`);
-    return endDateObj > new Date();
-  };
+  if (!endDate) return false;
+  
+  try {
+    // Nettoyer la date si elle contient du texte
+    const cleanedDate = endDate.replace('انتهى في: ', '').trim();
+    
+    // Convertir DD/MM/YYYY en Date object
+    const [day, month, year] = cleanedDate.split('/');
+    const dateObj = new Date(`${year}/${month}/${day}`);
+    
+    // Vérifier si la date est valide et non expirée
+    return !isNaN(dateObj.getTime()) && dateObj > new Date();
+  } catch (error) {
+    console.error('Error parsing date:', error);
+    return false;
+  }
+};
 
   const handleViewDetails = async (user) => {
     try {
@@ -768,4 +780,4 @@ const List = () => {
   );
 };
 
-export default List;
+export default Lists;
