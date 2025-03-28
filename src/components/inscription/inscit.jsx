@@ -1,10 +1,27 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { FaCamera, FaDumbbell, FaUserPlus } from 'react-icons/fa';
+import { FaCamera, FaDumbbell, FaUserPlus, FaIdCard, FaBirthdayCake, FaBriefcase, FaHome, FaPhone, FaCalendarAlt, FaMoneyBillWave, FaShieldAlt } from 'react-icons/fa';
 import { invoke } from '@tauri-apps/api/core';
 import Flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
-import { Arabic } from 'flatpickr/dist/l10n/ar'; // Localisation en arabe
+import { Arabic } from 'flatpickr/dist/l10n/ar';
+import { motion } from 'framer-motion';
+import { TextField, MenuItem, Button, Paper, Typography, Avatar, IconButton, Grid } from '@mui/material';
+import { styled } from '@mui/system';
+
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  borderRadius: '12px',
+  overflow: 'hidden',
+  boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+}));
+
+const StyledButton = styled(Button)(({ theme }) => ({
+  borderRadius: '50px',
+  padding: '10px 24px',
+  fontWeight: 'bold',
+  textTransform: 'none',
+  transition: 'all 0.3s ease',
+}));
 
 const Inscription = () => {
   const [formData, setFormData] = useState({
@@ -18,7 +35,7 @@ const Inscription = () => {
     photo: '',
     phone: '',
     registration_date: '',
-    assirance: 0, // Nouveau champ
+    assirance: 0,
     sport_type: '',
     price: 0,
     start_date: '',
@@ -26,59 +43,54 @@ const Inscription = () => {
   });
 
   const [previewImage, setPreviewImage] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Références pour Flatpickr
   const dateNaissanceRef = useRef(null);
-  const registrationDateRef = useRef(null);
+  const assiranceDateRef = useRef(null);
   const startDateRef = useRef(null);
-  const endDateRef = useRef(null);
 
   // Initialiser Flatpickr
- useEffect(() => {
-  const flatpickrOptions = {
-    locale: Arabic,
-    dateFormat: 'd/m/Y',
-    altInput: true,
-    altFormat: 'd/m/Y',
-    onChange: (selectedDates, dateStr) => {
-      setFormData(prev => ({
-        ...prev,
-        start_date: dateStr,
-        end_date: add30Days(dateStr),
-      }));
-    },
-  };
+  useEffect(() => {
+    const today = new Date();
+    const flatpickrOptions = {
+      locale: Arabic,
+      dateFormat: 'd/m/Y',
+      altInput: true,
+      altFormat: 'd/m/Y',
+      defaultDate: today,
+    };
 
-  Flatpickr(startDateRef.current, flatpickrOptions);
-}, []);
+    Flatpickr(startDateRef.current, {
+      ...flatpickrOptions,
+      onChange: (selectedDates, dateStr) => {
+        setFormData(prev => ({
+          ...prev,
+          start_date: dateStr,
+          end_date: add30Days(dateStr), // Calcul automatique mais pas affiché
+        }));
+      },
+    });
 
-  // Fonction pour ajouter 30 jours à une date
+    Flatpickr(dateNaissanceRef.current, { ...flatpickrOptions, defaultDate: null });
+    Flatpickr(assiranceDateRef.current, flatpickrOptions);
+  }, []);
+
   const add30Days = (dateStr) => {
-  if (!dateStr) return '';
-  const [day, month, year] = dateStr.split('/');
-  const date = new Date(`${month}/${day}/${year}`);
-  if (isNaN(date.getTime())) return '';
-  date.setDate(date.getDate() + 30);
-  return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
-};
+    if (!dateStr) return '';
+    const [day, month, year] = dateStr.split('/');
+    const date = new Date(`${month}/${day}/${year}`);
+    if (isNaN(date.getTime())) return '';
+    date.setDate(date.getDate() + 30);
+    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    // Mettre à jour formData
-    setFormData((prevState) => {
-      const updatedFormData = {
-        ...prevState,
-        [name]: name === 'price' || name === 'assirance' ? parseFloat(value) : value,
-      };
-
-      // Si start_date est modifié, calculer end_date
-      if (name === 'start_date') {
-        updatedFormData.end_date = add30Days(value);
-      }
-
-      return updatedFormData;
-    });
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === 'price' || name === 'assirance' ? parseFloat(value) || 0 : value,
+    }));
   };
 
   const handlePhotoChange = (e) => {
@@ -86,12 +98,8 @@ const Inscription = () => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        const result = reader.result;
-        setPreviewImage(result);
-        setFormData((prevState) => ({
-          ...prevState,
-          photo: result,
-        }));
+        setPreviewImage(reader.result);
+        setFormData(prev => ({ ...prev, photo: reader.result }));
       };
       reader.readAsDataURL(file);
     }
@@ -99,276 +107,424 @@ const Inscription = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Validation des dates
-    // if (!formData.start_date || !formData.end_date) {
-    //   alert('Veuillez remplir les dates de début et de fin.');
-    //   return;
-    // }
-
-    // Calculer end_date si start_date est défini
-    const updatedFormData = {
-      ...formData,
-      end_date: formData.start_date ? add30Days(formData.start_date) : formData.end_date,
-    };
-
-    console.log(updatedFormData);
-
+    setIsSubmitting(true);
+    
     try {
-      const result = await invoke('add_new_user', { user: updatedFormData });
-      console.log('Réponse du backend:', result);
+      const updatedFormData = {
+        ...formData,
+        end_date: formData.start_date ? add30Days(formData.start_date) : '',
+      };
+      
+      await invoke('add_new_user', { user: updatedFormData });
       alert('تم التسجيل بنجاح !');
+      setFormData({
+        id: '',
+        last_name: '',
+        first_name: '',
+        date_naissance: '',
+        cin: '',
+        profession: '',
+        adresse: '',
+        photo: '',
+        phone: '',
+        registration_date: '',
+        assirance: 0,
+        sport_type: '',
+        price: 0,
+        start_date: '',
+        end_date: '',
+      });
+      setPreviewImage(null);
     } catch (error) {
-      console.error('Erreur lors de l\'inscription:', error);
+      console.error('Erreur:', error);
       alert('لقد حدث خطأ.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  const sportOptions = [
+    { value: 'الأيروبيك', label: 'الأيروبيك' },
+    { value: 'الملاكمة', label: 'الملاكمة' },
+    { value: 'اللياقة البدنية', label: 'اللياقة البدنية' },
+    { value: 'التايكوندو', label: 'التايكوندو' },
+    { value: 'الفول كونتاكت', label: 'الفول كونتاكت' },
+    { value: 'كمال الأجسام', label: 'كمال الأجسام' },
+
+  ];
+
   return (
-    <div className="overflow-auto h-full bg-zinc-100 pb-6">
-      <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-lg">
-        <div className="bg-gradient-to-r from-red-600 to-red-800 rounded-t-lg p-4">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="overflow-auto h-full bg-gray-50 p-4"
+    >
+      <StyledPaper className="max-w-5xl mx-auto">
+        {/* En-tête */}
+        <div className="bg-gradient-to-r from-red-600 to-red-800 p-6 text-white">
           <div className="flex items-center space-x-3">
-            <FaDumbbell className="text-white text-2xl" />
-            <h2 className="text-2xl font-bold text-white">تسجيل الأعضاء</h2>
+            <FaDumbbell className="text-2xl" />
+            <Typography variant="h4" component="h1" className="font-bold">
+              تسجيل الأعضاء
+            </Typography>
           </div>
         </div>
 
+        {/* Contenu principal */}
         <div className="p-6">
-          <div className="flex flex-col md:flex-row justify-between items-center mb-6">
-            <div className="w-full md:w-auto flex flex-col md:flex-row items-center mb-6 md:mb-0 space-x-4">
-              <div className="relative w-32 h-32 mb-3 md:mb-0">
-                {previewImage ? (
-                  <img
-                    src={previewImage}
-                    alt="Aperçu de la photo"
-                    className="w-full h-full object-cover rounded-full border-4 border-red-500 shadow-xl"
+          {/* Section photo et ID */}
+          <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+            {/* Upload photo */}
+            <div className="flex flex-col items-center mb-6 md:mb-0">
+              <div className="relative">
+                <Avatar
+                  src={previewImage}
+                  sx={{ 
+                    width: 120, 
+                    height: 120,
+                    border: '4px solid #e53e3e',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                  }}
+                >
+                  <FaCamera className="text-4xl text-gray-400" />
+                </Avatar>
+                <IconButton
+                  component="label"
+                  color="primary"
+                  sx={{
+                    position: 'absolute',
+                    bottom: 0,
+                    right: 0,
+                    backgroundColor: '#e53e3e',
+                    '&:hover': { backgroundColor: '#c53030' },
+                  }}
+                >
+                  <FaCamera className="text-white" />
+                  <input
+                    type="file"
+                    hidden
+                    onChange={handlePhotoChange}
+                    accept="image/*"
                   />
-                ) : (
-                  <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center border-4 border-red-500">
-                    <FaCamera className="h-12 w-12 text-gray-400" />
-                  </div>
-                )}
+                </IconButton>
               </div>
-              <label
-                htmlFor="photo-upload"
-                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full cursor-pointer transition duration-300 ease-in-out flex items-center space-x-2 text-sm"
-              >
-                <FaCamera className="mr-2" />
-                <span>إضافة صورة</span>
-              </label>
-              <input
-                id="photo-upload"
-                name="photo"
-                type="file"
-                className="hidden"
-                onChange={handlePhotoChange}
-                accept="image/*"
-              />
+              <Typography variant="body2" className="mt-2 text-gray-600">
+                صورة العضو
+              </Typography>
             </div>
 
-            <div className="w-full md:w-auto">
-              <label htmlFor="id" className="block text-xl font-medium text-gray-700 text-right">رقم</label>
-              <input
-                type="text"
+            {/* Numéro de membre */}
+            <div className="w-full md:w-1/4">
+              <TextField
+                fullWidth
+                label="رقم العضوية"
+                variant="outlined"
+                InputLabelProps={{
+    style: { 
+      fontSize: '1.1rem', // Taille augmentée
+      fontWeight: 'bold'  // Optionnel: pour plus de visibilité
+    }
+  }}
                 id="id"
                 name="id"
                 value={formData.id}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-red-500 focus:border-red-500"
+                InputProps={{
+                  startAdornment: <FaIdCard className="mr-2 text-gray-500" />,
+                }}
               />
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="first_name" className="block text-xl font-medium text-gray-700"> الاسم العائلي </label>
-                <input
-                  type="text"
+          {/* Formulaire */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <Grid container spacing={3}>
+              {/* Informations personnelles */}
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="الاسم العائلي"
+                  variant="outlined"
+                  InputLabelProps={{
+    style: { 
+      fontSize: '1.1rem', // Taille augmentée
+      fontWeight: 'bold'  // Optionnel: pour plus de visibilité
+    }
+  }}
                   id="first_name"
                   name="first_name"
                   value={formData.first_name}
                   onChange={handleChange}
                   required
-                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-red-500 focus:border-red-500"
+                  fullWidth
                 />
-              </div>
-              <div>
-                <label htmlFor="last_name" className="block text-xl font-medium text-gray-700"> الاسم الشخصي</label>
-                <input
-                  type="text"
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="الاسم الشخصي"
+                  variant="outlined"
+                  InputLabelProps={{
+    style: { 
+      fontSize: '1.1rem', // Taille augmentée
+      fontWeight: 'bold'  // Optionnel: pour plus de visibilité
+    }
+  }}
                   id="last_name"
                   name="last_name"
                   value={formData.last_name}
                   onChange={handleChange}
                   required
-                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-red-500 focus:border-red-500"
+                  fullWidth
                 />
-              </div>
-              <div>
-                <label htmlFor="date_naissance" className="block text-xl font-medium text-gray-700">تاريخ ازدياد</label>
-                <input
-                  type="text"
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="تاريخ الازدياد"
+                  variant="outlined"
+                  InputLabelProps={{
+    style: { 
+      fontSize: '1.1rem', // Taille augmentée
+      fontWeight: 'bold'  // Optionnel: pour plus de visibilité
+    }
+  }}
                   id="date_naissance"
                   name="date_naissance"
-                  ref={dateNaissanceRef}
+                  inputRef={dateNaissanceRef}
                   value={formData.date_naissance}
                   onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-red-500 focus:border-red-500"
+                  fullWidth
+                  InputProps={{
+                    startAdornment: <FaBirthdayCake className="mr-2 text-gray-500" />,
+                  }}
                 />
-              </div>
-              <div>
-                <label htmlFor="cin" className="block text-xl font-medium text-gray-700">بطاقة الهوية </label>
-                <input
-                  type="text"
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="بطاقة الهوية"
+                  variant="outlined"
+                  InputLabelProps={{
+    style: { 
+      fontSize: '1.1rem', // Taille augmentée
+      fontWeight: 'bold'  // Optionnel: pour plus de visibilité
+    }
+  }}
                   id="cin"
                   name="cin"
                   value={formData.cin}
                   onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-red-500 focus:border-red-500"
+                  fullWidth
+                  InputProps={{
+                    startAdornment: <FaIdCard className="mr-2 text-gray-500" />,
+                  }}
                 />
-              </div>
-              <div>
-                <label htmlFor="profession" className="block text-xl font-medium text-gray-700">مهنة</label>
-                <input
-                  type="text"
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="المهنة"
+                  variant="outlined"
+                  InputLabelProps={{
+    style: { 
+      fontSize: '1.1rem', // Taille augmentée
+      fontWeight: 'bold'  // Optionnel: pour plus de visibilité
+    }
+  }}
                   id="profession"
                   name="profession"
                   value={formData.profession}
                   onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-red-500 focus:border-red-500"
+                  fullWidth
+                  InputProps={{
+                    startAdornment: <FaBriefcase className="mr-2 text-gray-500" />,
+                  }}
                 />
-              </div>
-              <div>
-                <label htmlFor="adresse" className="block text-xl font-medium text-gray-700">عنوان</label>
-                <input
-                  type="text"
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="العنوان"
+                  variant="outlined"
+                  InputLabelProps={{
+    style: { 
+      fontSize: '1.1rem', // Taille augmentée
+      fontWeight: 'bold'  // Optionnel: pour plus de visibilité
+    }
+  }}
                   id="adresse"
                   name="adresse"
                   value={formData.adresse}
                   onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-red-500 focus:border-red-500"
+                  fullWidth
+                  InputProps={{
+                    startAdornment: <FaHome className="mr-2 text-gray-500" />,
+                  }}
                 />
-              </div>
-              <div>
-                <label htmlFor="phone" className="block text-xl font-medium text-gray-700">هاتف</label>
-                <input
-                  type="tel"
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="الهاتف"
+                  variant="outlined"
+                  InputLabelProps={{
+    style: { 
+      fontSize: '1.1rem', // Taille augmentée
+      fontWeight: 'bold'  // Optionnel: pour plus de visibilité
+    }
+  }}
                   id="phone"
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-red-500 focus:border-red-500"
+                  fullWidth
+                  InputProps={{
+                    startAdornment: <FaPhone className="mr-2 text-gray-500" />,
+                    type: 'tel',
+                  }}
                 />
-              </div>
-              {/* Nouvelle section pour registration_date et assirance */}
-              <div className="flex space-x-4">
-                <div className="flex-1">
-                  <label htmlFor="registration_date" className="block text-xl font-medium text-gray-700">تاريخه </label>
-                  <input
-                    type="text"
-                    id="registration_date"
-                    name="registration_date"
-                    ref={registrationDateRef}
-                    value={formData.registration_date}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-red-500 focus:border-red-500"
-                  />
-                </div>
-                <div className="flex-1">
-                  <label htmlFor="assirance" className="block text-xl font-medium text-gray-700">التأمين</label>
-                  <input
-                    type="number"
-                    id="assirance"
-                    name="assirance"
-                    value={formData.assirance}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-red-500 focus:border-red-500"
-                  />
-                </div>
-              </div>
-              {/* Fin de la nouvelle section */}
-              <div>
-                <label htmlFor="sport_type" className="block text-xl font-medium text-gray-700">نوع الرياضة</label>
-                <select
+              </Grid>
+
+              {/* Ligne pour تاريخ التامين والتأمين */}
+              <Grid item xs={12} md={6}>
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="تاريخ التامين"
+                      variant="outlined"
+                      InputLabelProps={{
+    style: { 
+      fontSize: '1.1rem', // Taille augmentée
+      fontWeight: 'bold'  // Optionnel: pour plus de visibilité
+    }
+  }}
+                      id="registration_date"
+                      name="registration_date"
+                      inputRef={assiranceDateRef}
+                      value={formData.registration_date}
+                      onChange={handleChange}
+                      fullWidth
+                      InputProps={{
+                        startAdornment: <FaShieldAlt className="mr-2 text-gray-500" />,
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="التأمين"
+                      variant="outlined"
+                      InputLabelProps={{
+    style: { 
+      fontSize: '1.1rem', // Taille augmentée
+      fontWeight: 'bold'  // Optionnel: pour plus de visibilité
+    }
+  }}
+                      id="assirance"
+                      name="assirance"
+                      value={formData.assirance}
+                      onChange={handleChange}
+                      type="number"
+                      fullWidth
+                      InputProps={{
+                        startAdornment: <FaMoneyBillWave className="mr-2 text-gray-500" />,
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <TextField
+                  select
+                  label="نوع الرياضة"
+                  variant="outlined"
+                  InputLabelProps={{
+    style: { 
+      fontSize: '1.1rem', // Taille augmentée
+      fontWeight: 'bold'  // Optionnel: pour plus de visibilité
+    }
+  }}
                   id="sport_type"
                   name="sport_type"
                   value={formData.sport_type}
                   onChange={handleChange}
                   required
-                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-xl focus:ring-red-500 focus:border-red-500"
+                  fullWidth
                 >
-                  <option value="">اختر رياضة</option>
-                  <option value="الأيروبيك">الأيروبيك</option>
-                  <option value="الملاكمة">الملاكمة</option>
-                  <option value="اللياقة البدنية">اللياقة البدنية</option>
-                  <option value="التايكوندو">التايكوندو</option>
-                  <option value="الفول كونتاكت">الفول كونتاكت</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="price" className="block text-xl font-medium text-gray-700">المبلغ</label>
-                <input
-                  type="number"
+                  <MenuItem value=""><em>اختر رياضة</em></MenuItem>
+                  {sportOptions.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="المبلغ"
+                  variant="outlined"
                   id="price"
                   name="price"
                   value={formData.price}
                   onChange={handleChange}
+                  type="number"
                   required
-                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-red-500 focus:border-red-500"
+                  fullWidth
+                  InputProps={{
+                    startAdornment: <FaMoneyBillWave className="mr-2 text-gray-500" />,
+                  }}
                 />
-              </div>
-            <div>
-  <label htmlFor="start_date" className="block text-xl font-medium text-gray-700">
-    تاريخ الانخراط
-  </label>
-  <input
-    type="text"
-    id="start_date"
-    name="start_date"
-    ref={startDateRef}
-    className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-red-500 focus:border-red-500"
-    required
-  />
-</div>
+              </Grid>
 
-{/* Afficher end_date uniquement si start_date est défini */}
-{formData.start_date && (
-  <div>
-    <label htmlFor="end_date" className="block text-xl font-medium text-gray-700">تاريخ الانتهاء</label>
-    <input
-      type="text"
-      id="end_date"
-      name="end_date"
-      ref={endDateRef}
-      value={formData.end_date}
-      onChange={handleChange}
-      className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-xl focus:ring-red-500 focus:border-red-500"
-    />
-  </div>
-)}
-            </div>
+              {/* Champ unique pour تاريخ الانخراط */}
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="تاريخ الانخراط"
+                  variant="outlined"
+                  id="start_date"
+                  name="start_date"
+                  inputRef={startDateRef}
+                  fullWidth
+                  required
+                  InputProps={{
+                    startAdornment: <FaCalendarAlt className="mr-2 text-gray-500" />,
+                  }}
+                  helperText="سيتم حساب تاريخ الانتهاء تلقائياً (بعد 30 يوماً)"
+                />
+              </Grid>
+            </Grid>
 
-            <div className="flex justify-end mt-6">
-              <button
+            {/* Bouton de soumission */}
+            <div className="flex justify-end mt-8">
+              <StyledButton
                 type="submit"
-                className="px-6 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white font-bold rounded-full shadow-lg hover:from-red-700 hover:to-red-800 transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2 text-sm"
+                variant="contained"
+                color="error"
+                size="large"
+                startIcon={<FaUserPlus />}
+                disabled={isSubmitting}
+                sx={{
+                  background: 'linear-gradient(45deg, #e53e3e 30%, #c53030 90%)',
+                  '&:hover': {
+                    transform: 'scale(1.05)',
+                  },
+                }}
               >
-                <FaUserPlus className="text-lg" />
-                <span>تأكيد التسجيل</span>
-              </button>
+                {isSubmitting ? 'جاري الحفظ...' : 'تأكيد التسجيل'}
+              </StyledButton>
             </div>
           </form>
         </div>
-      </div>
-    </div>
+      </StyledPaper>
+    </motion.div>
   );
 };
 
 Inscription.propTypes = {
-  // Vous pouvez ajouter des PropTypes ici si nécessaire
+  // PropTypes si nécessaire
 };
 
 export default Inscription;

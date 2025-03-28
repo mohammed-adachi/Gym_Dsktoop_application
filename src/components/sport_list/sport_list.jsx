@@ -1,191 +1,18 @@
-// import React, { useState, useEffect } from 'react';
-// import { Users, Dumbbell, BoxIcon as Boxing, SpaceIcon as Yoga, BarcodeIcon as Karate, Swords } from 'lucide-react';
-// import { invoke } from '@tauri-apps/api/core';
-
-// const sports = [
-//   { name: "الأيروبيك", icon: Yoga },
-//   { name: "الملاكمة", icon: Boxing },
-//   { name: "اللياقة البدنية", icon: Dumbbell },
-//   { name: "التايكوندو", icon: Karate },
-//   { name: "الفول كونتاكت", icon: Swords },
-// ];
-
-// const SportMembers = () => {
-//   const [selectedSport, setSelectedSport] = useState(null);
-//   const [selectedUser, setSelectedUser] = useState(null);
-//   const [users, setUsers] = useState([]);
-//   const [isModalOpen, setIsModalOpen] = useState(false);
-//   useEffect(() => {
-//     fetchUsers();
-//   }, []);
-// const handleViewDetails = async (user) => {
-//   try {
-//     const userId = String(user.id); 
-//     console.log("Fetching user with ID:", userId);
-
-//     // Appeler la fonction pour récupérer l'historique des paiements de l'utilisateur
-//     const fetchedUser = await invoke("user_historyId", { id: userId });
-//     console.log("Fetched user history:", fetchedUser);
-
-//     setSelectedUser(fetchedUser);
-//     setIsModalOpen(true); // Ouvrir le modal
-//   } catch (error) {
-//     console.error("Erreur lors de la récupération de l'utilisateur:", error);
-//   }
-// };
-
-
-//   const fetchUsers = async () => {
-//     try {
-//       const fetchedUsers = await invoke('get_all_users');
-//       setUsers(fetchedUsers);
-//     } catch (error) {
-//       console.error('Error fetching users:', error);
-//     }
-//   };
-
-//   const filteredUsers = selectedSport
-//     ? users.filter(user => user.sport_type === selectedSport)
-//     : [];
-
-// const renderPaymentDetails = () => {
-//   if (!selectedUser) return null;
-
-//   // Assurer que selectedUser est un tableau de paiements
-//   const payments = Array.isArray(selectedUser) ? selectedUser : [];
-
-//   return (
-//     <div className="modal-content">
-//       <h2 className="text-xl font-semibold mb-4">تفاصيل الدفع</h2>
-//       {payments.length > 0 ? (
-//         <table className="min-w-full bg-white">
-//           <thead className="bg-gray-100">
-//             <tr>
-//               <th className="py-2 px-4 border-b">تاريخ البدء</th>
-//               <th className="py-2 px-4 border-b">تاريخ الانتهاء</th>
-//               <th className="py-2 px-4 border-b">السعر</th>
-//             </tr>
-//           </thead>
-//           <tbody>
-//             {payments.map((payment, index) => (
-//               <tr key={index} className="hover:bg-gray-50">
-//                 <td className="py-2 px-4 border-b">{payment.start_date}</td>
-//                 <td className="py-2 px-4 border-b">{payment.end_date}</td>
-//                 <td className="py-2 px-4 border-b">{payment.price} DH</td>
-//               </tr>
-//             ))}
-//           </tbody>
-//         </table>
-//       ) : (
-//         <p className="text-center text-gray-500 mt-4">لا توجد مدفوعات مسجلة لهذا المستخدم.</p>
-//       )}
-//       <button 
-//         onClick={() => setIsModalOpen(false)} 
-//         className="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-//       >
-//         إغلاق
-//       </button>
-//     </div>
-//   );
-// };
-
-//   return (
-//     <div className="p-6 max-w-6xl mx-auto">
-//       <h1 className="text-3xl font-bold mb-6 text-center">الأعضاء حسب الرياضة</h1>
-      
-//       <div className="flex flex-wrap justify-center gap-4 mb-8">
-//         {sports.map((sport) => (
-//           <button
-//             key={sport.name}
-//             onClick={() => setSelectedSport(sport.name)}
-//             className={`flex items-center px-4 py-2 rounded-md ${
-//               selectedSport === sport.name
-//                 ? 'bg-blue-500 text-white'
-//                 : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-//             }`}
-//           >
-//             <sport.icon className="mr-2" size={20} />
-//             {sport.name}
-//           </button>
-//         ))}
-//       </div>
-
-//       {selectedSport && (
-//         <div>
-//           <h2 className="text-2xl font-semibold mb-4">أعضاء {selectedSport}</h2>
-//           <div className="overflow-x-auto">
-//             <table className="min-w-full bg-white">
-//               <thead className="bg-gray-100">
-//                 <tr>
-//                   <th className="py-2 px-4 border-b">الاسم</th>
-//                   {/* <th className="py-2 px-4 border-b">تاريخ الميلاد</th>
-//                   <th className="py-2 px-4 border-b">رقم الهوية</th>
-//                   <th className="py-2 px-4 border-b">المهنة</th> */}
-//                   <th className="py-2 px-4 border-b">العنوان</th>
-//                   <th className="py-2 px-4 border-b">الهاتف</th>
-//                   <th className="py-2 px-4 border-b">تاريخ التسجيل</th>
-//                   <th className="py-2 px-4 border-b">السعر</th>
-//                   <th className="py-2 px-4 border-b">تاريخ البدء</th>
-//                   <th className="py-2 px-4 border-b">تاريخ الانتهاء</th>
-//                   <th className="py-2 px-4 border-b">الأفعال </th>
-//                 </tr>
-//               </thead>
-//               <tbody>
-//                 {filteredUsers.map((user) => (
-//                   <tr key={user.id} className="hover:bg-gray-50">
-//                     <td className="py-2 px-4 border-b">{`${user.first_name} ${user.last_name}`}</td>
-//                     {/* <td className="py-2 px-4 border-b">{user.date_naissance}</td>
-//                     <td className="py-2 px-4 border-b">{user.cin}</td> */}
-//                     {/* <td className="py-2 px-4 border-b">{user.profession}</td> */}
-//                     <td className="py-2 px-4 border-b">{user.adresse}</td>
-//                     <td className="py-2 px-4 border-b">{user.phone}</td>
-//                     <td className="py-2 px-4 border-b">{user.registration_date}</td>
-//                     <td className="py-2 px-4 border-b">{user.price}</td>
-//                     <td className="py-2 px-4 border-b">{user.start_date}</td>
-//                     <td className="py-2 px-4 border-b">{user.end_date}</td>
-//                       <button 
-//                         onClick={() => handleViewDetails(user)}
-//                         className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-//                       >
-//                         View
-//                       </button>
-//                   </tr>
-//                 ))}
-//               </tbody>
-//             </table>
-//           </div>
-//           {filteredUsers.length === 0 && (
-//             <p className="text-center text-gray-500 mt-4">
-//               لم يتم العثور على أعضاء لهذه الرياضة.
-//             </p>
-//           )}
-//         </div>
-//       )}
-
-//       {!selectedSport && (
-//         <p className="text-center text-gray-500 mt-4">
-//           يرجى اختيار رياضة لرؤية أعضائها.
-//         </p>
-//       )}
-//     </div>
-    
-//   );
-
-// };
-
-// export default SportMembers;
-
 import React, { useState, useEffect } from 'react';
-import { Users, Dumbbell, BoxIcon as Boxing, SpaceIcon as Yoga, BarcodeIcon as Karate, Swords } from 'lucide-react';
+import { Users, Dumbbell, BoxIcon as Boxing, SpaceIcon as Yoga, BarcodeIcon as Karate, Swords, Search, Armchair } from 'lucide-react'
 import { invoke } from '@tauri-apps/api/core';
 import { X, Calendar, DollarSign } from 'lucide-react';
+import logo from '../../images/logo.jpg'; // Chemin relatif correct depuis le composant
+
 
 const sports = [
-  { name: "الأيروبيك", icon: Yoga },
-  { name: "الملاكمة", icon: Boxing },
-  { name: "اللياقة البدنية", icon: Dumbbell },
-  { name: "التايكوندو", icon: Karate },
-  { name: "كونتاكت الفول", icon: Swords },
+  { name: "الأيروبيك", icon: Yoga, color: "bg-purple-500" },
+  { name: "الملاكمة", icon: Boxing, color: "bg-red-500" },
+  { name: "اللياقة البدنية", icon: Dumbbell, color: "bg-blue-500" },
+  { name: "التايكوندو", icon: Karate, color: "bg-green-500" },
+  { name: "الفول كونتاكت", icon: Swords, color: "bg-yellow-500" },
+  { name: "كمال الأجسام", icon: Armchair, color: "bg-orange-500" }, // Nouveau sport ajouté
+
 ];
 
 const SportMembers = () => {
@@ -193,244 +20,383 @@ const SportMembers = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [users, setUsers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  const handleViewDetails = async (user) => {
-    try {
-      const userId = String(user.id); 
-      console.log("Fetching user with ID:", userId);
-
-      // Appeler la fonction pour récupérer l'historique des paiements de l'utilisateur
-      const fetchedUser = await invoke("user_historyId", { id: userId });
-      console.log("Fetched user history:", fetchedUser);
-
-      setSelectedUser(fetchedUser);
-      setIsModalOpen(true); // Ouvrir le modal
-    } catch (error) {
-      console.error("Erreur lors de la récupération de l'utilisateur:", error);
-    }
-  };
-
   const fetchUsers = async () => {
     try {
       const fetchedUsers = await invoke('get_all_users');
-      setUsers(fetchedUsers);
+      // Ajouter un numéro unique pour chaque membre
+      const usersWithNumbers = fetchedUsers.map((user, index) => ({
+        ...user,
+        memberNumber: index + 1
+      }));
+      setUsers(usersWithNumbers);
     } catch (error) {
       console.error('Error fetching users:', error);
     }
   };
-  // Fonction pour formater la date de manière cohérente
-const formatDate = (dateString) => {
-  if (!dateString) return 'N/A';
-  
+
+const handleViewDetails = async (user) => {
   try {
-    // Essayez de parser différentes formes de dates
-    const date = new Date(dateString);
+    const userId = String(user.id);
+    const fetchedUser = await invoke("user_historyId", { id: userId });
     
-    // Si la date est invalide
-    if (isNaN(date.getTime())) {
-      return dateString; // Retourne la chaîne originale si le parsing échoue
-    }
+    // Convertir en tableau si ce n'en est pas un
+    const payments = Array.isArray(fetchedUser) ? fetchedUser : [fetchedUser];
     
-    // Formater en YYYY-MM-DD pour la cohérence
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    // Trier les paiements par date de début (du plus récent au plus ancien)
+    const sortedPayments = payments.sort((a, b) => {
+      const dateA = new Date(a.start_date || 0);
+      const dateB = new Date(b.start_date || 0);
+      return dateB - dateA; // Ordre décroissant
+    });
     
-    return `${year}-${month}-${day}`;
+    setSelectedUser({
+      userData: user,
+      payments: sortedPayments
+    });
+    
+    setIsModalOpen(true);
   } catch (error) {
-    console.error("Erreur de formatage de date:", error);
-    return dateString; // Retourne la chaîne originale en cas d'erreur
+    console.error("Error fetching user details:", error);
   }
 };
 
-  const filteredUsers = selectedSport
-    ? users.filter(user => user.sport_type === selectedSport)
-    : [];
-
- const renderPaymentDetails = () => {
-  if (!selectedUser) return null;
-
-  // Assurer que selectedUser est un tableau de paiements
-  const payments = Array.isArray(selectedUser) ? selectedUser : [selectedUser];
-  
-  // Calculer le montant total
-  const totalAmount = payments.length > 0 
-    ? payments.reduce((sum, payment) => sum + parseFloat(payment.price || 0), 0).toFixed(2) 
-    : 0;
-
-  return (
-    <div className= "h-screen 100vh bg-gradient-to-br from-gray-120 to-gray-120 text-white p-3 rounded-xl shadow-2xl w-200">
-      {/* Header avec effet de flou */}
-      <div className="relative mb-2 ">
-        <div className="absolute -top-12 -left-12 w-32 h-32 bg-purple-500 rounded-full opacity-30 blur-2xl"></div>
-        <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-blue-500 rounded-full opacity-30 blur-2xl"></div>
-        <h2 className="text-2xl font-bold mb-1 relative z-10 flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z" />
-          </svg>
-          تفاصيل الدفع
-        </h2>
-        <div className="h-1 w-20 bg-gradient-to-r from-purple-500 to-blue-5 rounded"></div>
-      </div>
-
-      {payments.length > 0 ? (
-        <div className="space-y-6">
-          {/* Card stylisée pour chaque paiement */}
-          {payments.map((payment, index) => (
-            <div key={index} className="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-blue-500 transition-all duration-300 transform hover:-translate-y-1">
-              <div className="flex items-center justify-between mb-3">
-                <div className="bg-gray-700 px-3 py-1 rounded-full text-xs">
-                  دفعة #{index + 1}
-                </div>
-                <div className="text-xl font-bold text-blue-400">
-                  {payment.price} <span className="text-xs opacity-70">DH</span>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div className="space-y-1">
-                  <div className="text-gray-400">تاريخ البدء</div>
-                  <div className="flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                    </svg>
-                    {formatDate(payment.start_date)}
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <div className="text-gray-400">تاريخ الانتهاء</div>
-                  <div className="flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                    </svg>
-                     {formatDate(payment.end_date)}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-          
-          {/* Résumé */}
-          <div className="mt-6 pt-4 border-t border-gray-700">
-            <div className="flex justify-between items-center">
-              <div className="text-gray-400">عدد الدفعات:</div>
-              <div>{payments.length}</div>
-            </div>
-            <div className="flex justify-between items-center mt-2">
-              <div className="text-gray-400">المجموع:</div>
-              <div className="text-xl font-bold text-purple-400">{totalAmount} DH</div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="py-10 text-center">
-          <div className="inline-flex justify-center items-center w-16 h-16 bg-gray-800 rounded-full mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-          </div>
-          <p className="text-gray-300 mb-2">لا توجد مدفوعات مسجلة لهذا المستخدم.</p>
-          <p className="text-gray-500 text-sm">سيتم عرض سجل الدفعات هنا بمجرد توفره.</p>
-        </div>
-      )}
-      
-      {/* Boutons d'action */}
-      <div className="mt-6 flex justify-end">
-        <button 
-          onClick={() => setIsModalOpen(false)} 
-          className="bg-gradient-to-r from-red-500 to-pink-500 px-5 py-2 rounded-lg text-white font-medium hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
-        >
-          إغلاق
-        </button>
-      </div>
-    </div>
-  );
+  const formatDate = (dateString) => {
+  if (!dateString) return 'N/A';
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    
+    return `${day}/${month}/${year}`; // Format JJ/MM/AAAA avec chiffres occidentaux
+  } catch (error) {
+    console.error("Date formatting error:", error);
+    return dateString;
+  }
 };
 
+  const handlePrintPayment = (payment, index) => {
+    if (!selectedUser?.userData) return;
+
+    const { userData } = selectedUser;
+    const printWindow = window.open('', '_blank');
+    
+    printWindow.document.write(`
+       <html dir="rtl">
+      <head>
+        <style>
+  @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+  
+  body { 
+    font-family: 'Tajawal', Arial, sans-serif; 
+    margin: 0; 
+    padding: 10px; 
+    color: #333;
+    background-color: white;
+  }
+  
+  .receipt { 
+    max-width: 100%; 
+    margin: 0; 
+    padding: 15px; 
+    border-bottom: 1px dashed #ccc;
+    background-color: white;
+  }
+  
+  .header { 
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px; 
+    padding-bottom: 10px; 
+    border-bottom: 1px solid #1a5fb4; 
+  }
+  
+  .logo {
+    width: 60px;
+    height: 60px;
+    margin-left: 15px;
+  }
+  
+  .header-text {
+    flex: 1;
+  }
+  
+  .gym-name {
+    color: #1a5fb4;
+    margin: 0 0 5px 0;
+    font-size: 18px;
+  }
+  
+  .receipt-number {
+    font-size: 16px;
+    color: #333;
+    margin: 0 0 5px 0;
+  }
+  
+  .print-date {
+    font-size: 12px;
+    color: #666;
+    margin: 0;
+  }
+  
+  .content { 
+    display: flex;
+    flex-wrap: wrap;
+    margin: 10px 0; 
+  }
+  
+  .row { 
+    width: 50%;
+    margin: 5px 0; 
+    font-size: 14px;
+  }
+  
+  .label {
+    font-weight: 700;
+    color: #1a5fb4;
+    margin-left: 5px;
+  }
+  
+  .value {
+    font-weight: 500;
+  }
+  
+  .footer {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #666;
+  }
+</style>
+      </head>
+      <body>
+  <div class="receipt">
+    <div class="header">
+      <img src=${logo} alt="نادي اللياقة البدنية" class="logo">
+      <div class="header-text">
+        <h1 class="gym-name">جمعية النصر سايس للرياضة</h1>
+        <p class="print-date">تاريخ الطباعة: ${formatDate(new Date())}</p>
+      </div>
+    </div>
+    <div class="content">
+      <div class="row"><span class="label">رقم العضو:</span> <span class="value">${userData.id}</span></div>
+      <div class="row"><span class="label">اسم العضو:</span> <span class="value">${userData.first_name} ${userData.last_name}</span></div>
+      <div class="row"><span class="label">الرياضة:</span> <span class="value">${userData.sport_type}</span></div>
+      <div class="row"><span class="label">المبلغ:</span> <span class="value">${payment.price} درهم</span></div>
+      <div class="row"><span class="label">تاريخ البدء:</span> <span class="value">${formatDate(payment.start_date)}</span></div>
+      <div class="row"><span class="label">تاريخ الانتهاء:</span> <span class="value">${formatDate(payment.end_date)}</span></div>
+    </div>
+    <div class="footer">
+      شكراً لاختياركم جمعية النصر سايس للرياضة
+    </div>
+  </div>
+</body>
+      </html>
+    `)
+    
+    printWindow.document.close();
+    setTimeout(() => printWindow.print(), 500);
+  };
+
+  const filteredUsers = users.filter(user => {
+    const matchesSport = !selectedSport || user.sport_type === selectedSport;
+    const matchesSearch = searchTerm === "" || 
+      user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.phone.includes(searchTerm) ||
+      user.id.toString().includes(searchTerm);
+    
+    return matchesSport && matchesSearch;
+  });
+
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-center">الأعضاء حسب الرياضة</h1>
-      
-      <div className="flex flex-wrap justify-center gap-4 mb-8">
-        {sports.map((sport) => (
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+      {/* Header Section */}
+      <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+        <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">إدارة أعضاء النادي الرياضي</h1>
+        
+        {/* Search Bar */}
+        <div className="relative max-w-2xl mx-auto mb-6">
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+            <Search className="text-gray-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="ابحث بالاسم، رقم الهاتف أو رقم العضو..."
+            className="w-full pr-10 pl-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
+        {/* Sport Filters */}
+        <div className="flex flex-wrap justify-center gap-3 mb-6">
           <button
-            key={sport.name}
-            onClick={() => setSelectedSport(sport.name)}
-            className={`flex items-center px-4 py-2 rounded-md ${
-              selectedSport === sport.name
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-            }`}
+            onClick={() => setSelectedSport(null)}
+            className={`flex items-center px-4 py-2 rounded-full ${!selectedSport ? 'bg-gray-800 text-white' : 'bg-gray-200 text-gray-800'}`}
           >
-            <sport.icon className="mr-2" size={20} />
-            {sport.name}
+            <Users className="ml-2" size={18} />
+            الكل
           </button>
-        ))}
+          
+          {sports.map((sport) => (
+            <button
+              key={sport.name}
+              onClick={() => setSelectedSport(sport.name)}
+              className={`flex items-center px-4 py-2 rounded-full ${selectedSport === sport.name ? `${sport.color} text-white` : 'bg-gray-200 text-gray-800'}`}
+            >
+              <sport.icon className="ml-2" size={18} />
+              {sport.name}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {selectedSport && (
-        <div>
-          <h2 className="text-2xl font-semibold mb-4">أعضاء {selectedSport}</h2>
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="py-2 px-4 border-b">الاسم</th>
-                  <th className="py-2 px-4 border-b">العنوان</th>
-                  <th className="py-2 px-4 border-b">الهاتف</th>
-                  <th className="py-2 px-4 border-b">تاريخ التسجيل</th>
-                  <th className="py-2 px-4 border-b">السعر</th>
-                  <th className="py-2 px-4 border-b">تاريخ البدء</th>
-                  <th className="py-2 px-4 border-b">تاريخ الانتهاء</th>
-                  <th className="py-2 px-4 border-b">الأفعال</th>
+      {/* Members Table */}
+      <div className="bg-white rounded-xl shadow-md overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الاسم</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الهاتف</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الرياضة</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاريخ التسجيل</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredUsers.map((user) => (
+                <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">{user.first_name} {user.last_name}</div>
+                    <div className="text-sm text-gray-500">{user.adresse}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.phone}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${sports.find(s => s.name === user.sport_type)?.color || 'bg-gray-200'} text-white`}>
+                      {user.sport_type}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(user.registration_date)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <button
+                      onClick={() => handleViewDetails(user)}
+                      className="text-blue-600 hover:text-blue-900 mr-3 flex items-center"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      التفاصيل
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
-                    <td className="py-2 px-4 border-b">{`${user.first_name} ${user.last_name}`}</td>
-                    <td className="py-2 px-4 border-b">{user.adresse}</td>
-                    <td className="py-2 px-4 border-b">{user.phone}</td>
-                    <td className="py-2 px-4 border-b">{user.registration_date}</td>
-                    <td className="py-2 px-4 border-b">{user.price}</td>
-                    <td className="py-2 px-4 border-b">{formatDate(user.start_date)}</td>
-                    <td className="py-2 px-4 border-b">{formatDate(user.end_date)}</td>
-                    <td className="py-2 px-4 border-b">
-                      <button 
-                        onClick={() => handleViewDetails(user)}
-                        className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-                      >
-                        عرض
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {filteredUsers.length === 0 && (
-            <p className="text-center text-gray-500 mt-4">
-              لم يتم العثور على أعضاء لهذه الرياضة.
-            </p>
-          )}
+              ))}
+            </tbody>
+          </table>
         </div>
-      )}
+        
+        {filteredUsers.length === 0 && (
+          <div className="p-8 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+              <Search className="text-gray-400" size={24} />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900">لا توجد نتائج</h3>
+            <p className="mt-1 text-sm text-gray-500">لم يتم العثور على أعضاء مطابقين لبحثك</p>
+          </div>
+        )}
+      </div>
 
-      {!selectedSport && (
-        <p className="text-center text-gray-500 mt-4">
-          يرجى اختيار رياضة لرؤية أعضائها.
-        </p>
-      )}
-
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center ">
-          <div className="bg-gray-600  p-2 rounded-lg max-w-3xl w-full max-h-[80vh] overflow-y-auto">
-            {renderPaymentDetails()}
+      {/* Payment Details Modal */}
+      {isModalOpen && selectedUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+                    <DollarSign className="ml-2" size={24} />
+                    تفاصيل الدفع
+                  </h2>
+                  <p className="text-gray-600 mt-1">العضو رقم: {selectedUser.userData.id}</p>
+                  <p className="text-gray-600">{selectedUser.userData.first_name} {selectedUser.userData.last_name}</p>
+                </div>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+              
+              <div className="mt-6 space-y-4">
+                {selectedUser.payments.length > 0 ? (
+                  selectedUser.payments.map((payment, index) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                          دفعة #{index + 1}
+                        </span>
+                        <span className="text-lg font-bold text-green-600">
+                          {payment.price} درهم
+                        </span>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-gray-500">تاريخ البدء</p>
+                          <p className="flex items-center mt-1">
+                            <Calendar className="ml-1 text-gray-400" size={16} />
+                            {formatDate(payment.start_date)}
+                          </p>
+                        </div>
+                        
+                        <div>
+                          <p className="text-gray-500">تاريخ الانتهاء</p>
+                          <p className="flex items-center mt-1">
+                            <Calendar className="ml-1 text-gray-400" size={16} />
+                            {formatDate(payment.end_date)}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 flex justify-end">
+                        <button
+                          onClick={() => handlePrintPayment(payment, index)}
+                          className="flex items-center bg-gray-800 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                          </svg>
+                          طباعة الإيصال
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">لا توجد مدفوعات مسجلة لهذا العضو</p>
+                  </div>
+                )}
+              </div>
+              
+              {selectedUser.payments.length > 0 && (
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

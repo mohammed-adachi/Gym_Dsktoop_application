@@ -209,6 +209,14 @@ pub struct UserUpdate {
     pub new_data: User,
 }
 pub fn update_all_user_fields(conn: &Connection, old_id: &str, new_user: &User) -> Result<()> {
+    // D'abord, récupérer l'utilisateur actuel pour comparer les dates
+    let current_user = get_userParId(conn, old_id)?;
+    
+    // Vérifier si les dates ont changé
+    let dates_changed = current_user.start_date != new_user.start_date 
+        || current_user.end_date != new_user.end_date;
+
+    // Effectuer la mise à jour complète de l'utilisateur
     conn.execute(
         "UPDATE users SET 
             id = ?1,
@@ -249,11 +257,25 @@ pub fn update_all_user_fields(conn: &Connection, old_id: &str, new_user: &User) 
         ],
     )?;
     
-    // Mettre à jour les références dans user_history
+    // Mettre à jour les références dans user_history si l'ID a changé
     if old_id != new_user.id {
         conn.execute(
             "UPDATE user_history SET id_user = ?1 WHERE id_user = ?2",
             params![&new_user.id, old_id],
+        )?;
+    }
+    
+    // Ajouter une entrée dans l'historique seulement si les dates ont changé
+    if dates_changed {
+        conn.execute(
+            "INSERT INTO user_history (id_user, start_date, end_date, price) 
+            VALUES (?1, ?2, ?3, ?4)",
+            params![
+                &new_user.id,
+                &new_user.start_date,
+                &new_user.end_date,
+                &new_user.price
+            ],
         )?;
     }
     

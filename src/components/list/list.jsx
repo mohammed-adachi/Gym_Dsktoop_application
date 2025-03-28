@@ -60,6 +60,14 @@ const Modal = ({ isOpen, onClose, user }) => {
                     <span className="font-medium">{user.sport_type}</span>
                   </div>
                   <div className="flex justify-between">
+                    <span className="text-gray-500">التأمين:</span>
+                    <span className="font-medium">{user.assirance}</span>
+                  </div>
+                    <div className="flex justify-between">
+                    <span className="text-gray-500">تاريخه :</span>
+                    <span className="font-medium">{formatDate(user.registration_date)}</span>
+                  </div>
+                  <div className="flex justify-between">
                     <span className="text-gray-500">المبلغ:</span>
                     <span className="font-medium">{user.price}</span>
                   </div>
@@ -169,18 +177,44 @@ const Modal = ({ isOpen, onClose, user }) => {
     </div>
   );
 };
-
 const EditModal = ({ isOpen, onClose, user, onSubmit }) => {
   const [formData, setFormData] = useState(user);
+  const [photoPreview, setPhotoPreview] = useState(user.photo || '');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value,
-    }));
+    
+    if (name === 'start_date' && value) {
+      const startDate = new Date(value);
+      const endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + 30);
+      
+      const formattedEndDate = endDate.toISOString().split('T')[0];
+      
+      setFormData(prevState => ({
+        ...prevState,
+        start_date: value,
+        end_date: formattedEndDate
+      }));
+    } else {
+      setFormData(prevState => ({
+        ...prevState,
+        [name]: value,
+      }));
+    }
   };
 
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result);
+        setFormData(prev => ({ ...prev, photo: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(formData);
@@ -206,6 +240,35 @@ const EditModal = ({ isOpen, onClose, user, onSubmit }) => {
         <div className="p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">صورة العضو</label>
+                <div className="flex items-center space-x-4">
+                  <div className="flex-shrink-0 h-24 w-24 rounded-full overflow-hidden bg-gray-200">
+                    {photoPreview ? (
+                      <img src={photoPreview} alt="Preview" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center text-gray-500">
+                        <User className="h-12 w-12" />
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <input
+                      type="file"
+                      id="photo"
+                      name="photo"
+                      accept="image/*"
+                      onChange={handlePhotoChange}
+                      className="block w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-md file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-blue-50 file:text-blue-700
+                        hover:file:bg-blue-100"
+                    />
+                  </div>
+                </div>
+              </div>
               <div>
                 <label htmlFor="id" className="block text-sm font-medium text-gray-700">ID</label>
                 <input
@@ -294,7 +357,41 @@ const EditModal = ({ isOpen, onClose, user, onSubmit }) => {
                   className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
+            
+      <div>
+                <label htmlFor="registration_date" className="block text-sm font-medium text-gray-700">تاريخه </label>
+                <input
+                  type="date"
+                  id="registration_date"
+                  name="registration_date"
+                  value={formData.registration_date}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              
               <div>
+                <label htmlFor="assirance" className="block text-sm font-medium text-gray-700">تأمين</label>
+                <input
+                  type="number"
+                  id="assirance"
+                  name="assirance"
+                  value={formData.assirance}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>              <div>
+                <label htmlFor="price" className="block text-sm font-medium text-gray-700">السعر</label>
+                <input
+                  type="number"
+                  id="price"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+                <div>
                 <label htmlFor="sport_type" className="block text-sm font-medium text-gray-700">نوع الرياضة</label>
                 <select
                   id="sport_type"
@@ -308,18 +405,9 @@ const EditModal = ({ isOpen, onClose, user, onSubmit }) => {
                   <option value="اللياقة البدنية">اللياقة البدنية</option>
                   <option value="التايكوندو">التايكوندو</option>
                   <option value="الفول كونتاكت">الفول كونتاكت</option>
+                  <option value="كمال الأجسام">  كمال الأجسام</option>
+
                 </select>
-              </div>
-              <div>
-                <label htmlFor="price" className="block text-sm font-medium text-gray-700">السعر</label>
-                <input
-                  type="number"
-                  id="price"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
-                />
               </div>
               <div>
                 <label htmlFor="start_date" className="block text-sm font-medium text-gray-700">تاريخ البدء</label>
@@ -333,14 +421,15 @@ const EditModal = ({ isOpen, onClose, user, onSubmit }) => {
                 />
               </div>
               <div>
-                <label htmlFor="end_date" className="block text-sm font-medium text-gray-700">تاريخ الانتهاء</label>
+                <label htmlFor="end_date" className="block text-sm font-medium text-gray-700">تاريخ الانتهاء (يتم حسابه تلقائيا +30 يوم)</label>
                 <input
                   type="date"
                   id="end_date"
                   name="end_date"
                   value={formData.end_date}
                   onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-100"
+                  readOnly
                 />
               </div>
               <div>
@@ -485,6 +574,7 @@ const Lists = () => {
         newUser: {
           ...updatedUser,
           price: parseFloat(updatedUser.price) || 0,
+          assirance: parseFloat(updatedUser.assirance) || 0,
           statut: Boolean(updatedUser.statut)
         }
       });

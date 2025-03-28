@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { format, isPast, parse, addDays } from 'date-fns';
 import { Bell, Calendar, DollarSign, X, AlertTriangle, CheckCircle, Search } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
+import logo from '../../images/logo.jpg';
 
 const Notification = () => {
   const [expiredClients, setExpiredClients] = useState([]);
@@ -11,7 +12,6 @@ const Notification = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Fonction pour parser les dates au format dd/MM/yyyy
   const parseCustomDate = (dateString) => {
     if (!dateString) return null;
     const [day, month, year] = dateString.split('/');
@@ -54,11 +54,10 @@ const Notification = () => {
     };
 
     fetchExpiredClients();
-    const interval = setInterval(fetchExpiredClients, 3600000); // Actualiser toutes les heures
+    const interval = setInterval(fetchExpiredClients, 3600000);
     return () => clearInterval(interval);
   }, []);
 
-  // Fonction de recherche
   useEffect(() => {
     if (searchTerm === '') {
       setFilteredClients(expiredClients);
@@ -99,49 +98,164 @@ const Notification = () => {
       showNotification('فشل في تحديث الاشتراك', 'error');
     }
   };
-
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A';
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    
+    return `${day}/${month}/${year}`; // Format JJ/MM/AAAA avec chiffres occidentaux
+  } catch (error) {
+    console.error("Date formatting error:", error);
+    return dateString;
+  }
+};
   const handlePrintReceipt = (client, startDate, endDate, amount) => {
-    const receipt = `
-      إيصال تجديد اشتراك
-      ------------------------
-      اسم العضو: ${client.name}
-      رقم العضوية: ${client.id}
-      نوع الاشتراك: ${client.membership}
-      ------------------------
-      تاريخ البدء: ${format(new Date(startDate), 'dd/MM/yyyy')}
-      تاريخ الانتهاء: ${format(new Date(endDate), 'dd/MM/yyyy')}
-      ------------------------
-      المبلغ المدفوع: ${amount} درهم
-      ------------------------
-      تاريخ الطباعة: ${format(new Date(), 'dd/MM/yyyy')}
-      شكراً لثقتكم
-    `;
+    // Fonction de formatage interne pour le reçu
+    const formatReceiptDate = (dateString) => {
+      if (!dateString) return 'N/A';
+      try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return dateString;
+        
+        const day = date.getDate();
+        const month = date.getMonth() + 1;
+        const year = date.getFullYear();
+        
+        return `${day}/${month}/${year}`;
+      } catch (error) {
+        return dateString;
+      }
+    };
 
-    const win = window.open('', '_blank');
-    win.document.write(`
-      <html dir="rtl">
-        <head>
-          <title>إيصال الدفع</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            pre { white-space: pre-wrap; font-size: 16px; }
+    const receiptHTML = `
+         <html dir="rtl">
+      <head>
+        <style>
+  @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+  
+  body { 
+    font-family: 'Tajawal', Arial, sans-serif; 
+    margin: 0; 
+    padding: 10px; 
+    color: #333;
+    background-color: white;
+  }
+  
+  .receipt { 
+    max-width: 100%; 
+    margin: 0; 
+    padding: 15px; 
+    border-bottom: 1px dashed #ccc;
+    background-color: white;
+  }
+  
+  .header { 
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px; 
+    padding-bottom: 10px; 
+    border-bottom: 1px solid #1a5fb4; 
+  }
+  
+  .logo {
+    width: 60px;
+    height: 60px;
+    margin-left: 15px;
+  }
+  
+  .header-text {
+    flex: 1;
+  }
+  
+  .gym-name {
+    color: #1a5fb4;
+    margin: 0 0 5px 0;
+    font-size: 18px;
+  }
+  
+  .receipt-number {
+    font-size: 16px;
+    color: #333;
+    margin: 0 0 5px 0;
+  }
+  
+  .print-date {
+    font-size: 12px;
+    color: #666;
+    margin: 0;
+  }
+  
+  .content { 
+    display: flex;
+    flex-wrap: wrap;
+    margin: 10px 0; 
+  }
+  
+  .row { 
+    width: 50%;
+    margin: 5px 0; 
+    font-size: 14px;
+  }
+  
+  .label {
+    font-weight: 700;
+    color: #1a5fb4;
+    margin-left: 5px;
+  }
+  
+  .value {
+    font-weight: 500;
+  }
+  
+  .footer {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #666;
+  }
           </style>
         </head>
         <body>
-          <pre>${receipt}</pre>
-          <script>
-            setTimeout(() => {
-              window.print();
-              window.close();
-            }, 500);
-          </script>
-        </body>
+        <div class="receipt">
+          <div class="header">
+                <img src=${logo} alt="نادي اللياقة البدنية" class="logo">
+                <div class="header-text">
+                  <h1 class="gym-name">جمعية النصر سايس للرياضة</h1>
+                  <p class="print-date">تاريخ الطباعة: ${formatReceiptDate(new Date())}</p>
+                </div>
+             </div>
+    <div class="content">
+      <div class="row"><span class="label">رقم العضو:</span> <span class="value">${client.id}</span></div>
+      <div class="row"><span class="label">اسم العضو:</span> <span class="value">${client.name}</span></div>
+      <div class="row"><span class="label">الرياضة:</span> <span class="value">${client.membership}</span></div>
+      <div class="row"><span class="label">المبلغ:</span> <span class="value">${amount} درهم</span></div>
+      <div class="row"><span class="label">تاريخ البدء:</span> <span class="value">${formatReceiptDate(startDate)}</span></div>
+      <div class="row"><span class="label">تاريخ الانتهاء:</span> <span class="value">${formatReceiptDate(endDate)}</span></div>
+    </div>
+    <div class="footer">
+      شكراً لاختياركم جمعية النصر سايس للرياضة
+    </div>
+  </div>
+</body>
       </html>
-    `);
-    win.document.close();
+    `;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.open();
+      printWindow.document.write(receiptHTML);
+      printWindow.document.close();
+    } else {
+      showNotification('تم منع النافذة المنبثقة، يرجى السماح بالنوافذ المنبثقة', 'error');
+    }
   };
 
-  return (
+   return (
     <div className="p-4 max-w-6xl mx-auto bg-gray-50 min-h-screen">
       {/* Notification */}
       {notification && (
