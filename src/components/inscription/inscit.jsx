@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { FaCamera, FaDumbbell, FaUserPlus, FaIdCard, FaBirthdayCake, FaBriefcase, FaHome, FaPhone, FaCalendarAlt, FaMoneyBillWave, FaShieldAlt } from 'react-icons/fa';
+import { FaCamera, FaDumbbell, FaUserPlus, FaIdCard, FaBirthdayCake, FaBriefcase, FaHome, FaPhone, FaCalendarAlt, FaMoneyBillWave, FaShieldAlt, FaArrowRight } from 'react-icons/fa';
 import { invoke } from '@tauri-apps/api/core';
 import Flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 import { Arabic } from 'flatpickr/dist/l10n/ar';
 import { motion } from 'framer-motion';
-import { TextField, MenuItem, Button, Paper, Typography, Avatar, IconButton, Grid } from '@mui/material';
+import { TextField, MenuItem, Button, Paper, Typography, Avatar, IconButton, Grid, Card, CardContent, CardActionArea } from '@mui/material';
 import { styled } from '@mui/system';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -21,6 +21,16 @@ const StyledButton = styled(Button)(({ theme }) => ({
   fontWeight: 'bold',
   textTransform: 'none',
   transition: 'all 0.3s ease',
+}));
+
+const SportCard = styled(Card)(({ theme }) => ({
+  minWidth: 200,
+  textAlign: 'center',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'scale(1.05)',
+    boxShadow: '0 10px 20px rgba(0,0,0,0.2)',
+  },
 }));
 
 const Inscription = () => {
@@ -44,6 +54,8 @@ const Inscription = () => {
 
   const [previewImage, setPreviewImage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedSport, setSelectedSport] = useState(null);
+  const [showForm, setShowForm] = useState(false);
 
   // Références pour Flatpickr
   const dateNaissanceRef = useRef(null);
@@ -52,6 +64,8 @@ const Inscription = () => {
 
   // Initialiser Flatpickr
   useEffect(() => {
+    if (!showForm) return;
+
     const today = new Date();
     const flatpickrOptions = {
       locale: Arabic,
@@ -67,14 +81,14 @@ const Inscription = () => {
         setFormData(prev => ({
           ...prev,
           start_date: dateStr,
-          end_date: add30Days(dateStr), // Calcul automatique mais pas affiché
+          end_date: add30Days(dateStr),
         }));
       },
     });
 
     Flatpickr(dateNaissanceRef.current, { ...flatpickrOptions, defaultDate: null });
     Flatpickr(assiranceDateRef.current, flatpickrOptions);
-  }, []);
+  }, [showForm]);
 
   const add30Days = (dateStr) => {
     if (!dateStr) return '';
@@ -117,6 +131,7 @@ const Inscription = () => {
       
       await invoke('add_new_user', { user: updatedFormData });
       alert('تم التسجيل بنجاح !');
+      // Reset form and go back to sport selection
       setFormData({
         id: '',
         last_name: '',
@@ -129,12 +144,14 @@ const Inscription = () => {
         phone: '',
         registration_date: '',
         assirance: 0,
-        sport_type: '',
+        sport_type: selectedSport,
         price: 0,
         start_date: '',
         end_date: '',
       });
       setPreviewImage(null);
+      setShowForm(false);
+      setSelectedSport(null);
     } catch (error) {
       console.error('Erreur:', error);
       alert('لقد حدث خطأ.');
@@ -143,15 +160,81 @@ const Inscription = () => {
     }
   };
 
-  const sportOptions = [
-    { value: 'الأيروبيك', label: 'الأيروبيك' },
-    { value: 'الملاكمة', label: 'الملاكمة' },
-    { value: 'اللياقة البدنية', label: 'اللياقة البدنية' },
-    { value: 'التايكوندو', label: 'التايكوندو' },
-    { value: 'الفول كونتاكت', label: 'الفول كونتاكت' },
-    { value: 'كمال الأجسام', label: 'كمال الأجسام' },
+  const handleSportSelect = (sport) => {
+    setSelectedSport(sport);
+    setFormData(prev => ({
+      ...prev,
+      sport_type: sport,
+    }));
+    setShowForm(true);
+  };
 
+  const sportOptions = [
+    { value: 'الأيروبيك', label: 'الأيروبيك', icon: <FaDumbbell /> },
+    { value: 'الملاكمة', label: 'الملاكمة', icon: <FaDumbbell /> },
+    { value: 'اللياقة البدنية', label: 'اللياقة البدنية', icon: <FaDumbbell /> },
+    { value: 'التايكوندو', label: 'التايكوندو', icon: <FaDumbbell /> },
+    { value: 'الفول كونتاكت', label: 'الفول كونتاكت', icon: <FaDumbbell /> },
+    { value: 'كمال الأجسام', label: 'كمال الأجسام', icon: <FaDumbbell /> },
   ];
+
+  if (!showForm) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="overflow-auto h-full bg-gray-50 p-4"
+      >
+        <StyledPaper className="max-w-5xl mx-auto">
+          {/* En-tête */}
+          <div className="bg-gradient-to-r from-red-600 to-red-800 p-6 text-white">
+            <div className="flex items-center space-x-3">
+              <FaDumbbell className="text-2xl" />
+              <Typography variant="h4" component="h1" className="font-bold">
+                اختر نوع الرياضة للتسجيل
+              </Typography>
+            </div>
+          </div>
+
+          {/* Sélection des sports */}
+          <div className="p-6">
+            <Typography variant="h6" gutterBottom className="text-gray-700 mb-6">
+              الرجاء اختيار نوع الرياضة التي تريد تسجيل العضو فيها
+            </Typography>
+
+            <Grid container spacing={3} justifyContent="center">
+              {sportOptions.map((sport) => (
+                <Grid item xs={12} sm={6} md={4} key={sport.value}>
+                  <SportCard>
+                    <CardActionArea onClick={() => handleSportSelect(sport.value)}>
+                      <CardContent>
+                        <div className="text-4xl mb-4 text-red-600">
+                          {sport.icon}
+                        </div>
+                        <Typography variant="h5" component="div">
+                          {sport.label}
+                        </Typography>
+                        <div className="mt-4 flex justify-center">
+                          <Button
+                            variant="outlined"
+                            color="primary"
+                            endIcon={<FaArrowRight />}
+                          >
+                            اختر
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </CardActionArea>
+                  </SportCard>
+                </Grid>
+              ))}
+            </Grid>
+          </div>
+        </StyledPaper>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div 
@@ -161,13 +244,26 @@ const Inscription = () => {
       className="overflow-auto h-full bg-gray-50 p-4"
     >
       <StyledPaper className="max-w-5xl mx-auto">
-        {/* En-tête */}
+        {/* En-tête avec bouton retour */}
         <div className="bg-gradient-to-r from-red-600 to-red-800 p-6 text-white">
-          <div className="flex items-center space-x-3">
-            <FaDumbbell className="text-2xl" />
-            <Typography variant="h4" component="h1" className="font-bold">
-              تسجيل الأعضاء
-            </Typography>
+          <div className="flex items-center justify-between">
+            <Button 
+              variant="outlined" 
+              color="inherit"
+              onClick={() => {
+                setShowForm(false);
+                setSelectedSport(null);
+              }}
+              startIcon={<FaArrowRight style={{ transform: 'rotate(180deg)' }} />}
+            >
+              العودة
+            </Button>
+            <div className="flex items-center space-x-3">
+              <FaDumbbell className="text-2xl" />
+              <Typography variant="h4" component="h1" className="font-bold">
+                تسجيل عضو في {selectedSport}
+              </Typography>
+            </div>
           </div>
         </div>
 
@@ -221,11 +317,11 @@ const Inscription = () => {
                 label="رقم العضوية"
                 variant="outlined"
                 InputLabelProps={{
-    style: { 
-      fontSize: '1.1rem', // Taille augmentée
-      fontWeight: 'bold'  // Optionnel: pour plus de visibilité
-    }
-  }}
+                  style: { 
+                    fontSize: '1.1rem',
+                    fontWeight: 'bold'
+                  }
+                }}
                 id="id"
                 name="id"
                 value={formData.id}
@@ -247,11 +343,11 @@ const Inscription = () => {
                   label="الاسم العائلي"
                   variant="outlined"
                   InputLabelProps={{
-    style: { 
-      fontSize: '1.1rem', // Taille augmentée
-      fontWeight: 'bold'  // Optionnel: pour plus de visibilité
-    }
-  }}
+                    style: { 
+                      fontSize: '1.1rem',
+                      fontWeight: 'bold'
+                    }
+                  }}
                   id="first_name"
                   name="first_name"
                   value={formData.first_name}
@@ -266,11 +362,11 @@ const Inscription = () => {
                   label="الاسم الشخصي"
                   variant="outlined"
                   InputLabelProps={{
-    style: { 
-      fontSize: '1.1rem', // Taille augmentée
-      fontWeight: 'bold'  // Optionnel: pour plus de visibilité
-    }
-  }}
+                    style: { 
+                      fontSize: '1.1rem',
+                      fontWeight: 'bold'
+                    }
+                  }}
                   id="last_name"
                   name="last_name"
                   value={formData.last_name}
@@ -285,11 +381,11 @@ const Inscription = () => {
                   label="تاريخ الازدياد"
                   variant="outlined"
                   InputLabelProps={{
-    style: { 
-      fontSize: '1.1rem', // Taille augmentée
-      fontWeight: 'bold'  // Optionnel: pour plus de visibilité
-    }
-  }}
+                    style: { 
+                      fontSize: '1.1rem',
+                      fontWeight: 'bold'
+                    }
+                  }}
                   id="date_naissance"
                   name="date_naissance"
                   inputRef={dateNaissanceRef}
@@ -307,11 +403,11 @@ const Inscription = () => {
                   label="بطاقة الهوية"
                   variant="outlined"
                   InputLabelProps={{
-    style: { 
-      fontSize: '1.1rem', // Taille augmentée
-      fontWeight: 'bold'  // Optionnel: pour plus de visibilité
-    }
-  }}
+                    style: { 
+                      fontSize: '1.1rem',
+                      fontWeight: 'bold'
+                    }
+                  }}
                   id="cin"
                   name="cin"
                   value={formData.cin}
@@ -328,11 +424,11 @@ const Inscription = () => {
                   label="المهنة"
                   variant="outlined"
                   InputLabelProps={{
-    style: { 
-      fontSize: '1.1rem', // Taille augmentée
-      fontWeight: 'bold'  // Optionnel: pour plus de visibilité
-    }
-  }}
+                    style: { 
+                      fontSize: '1.1rem',
+                      fontWeight: 'bold'
+                    }
+                  }}
                   id="profession"
                   name="profession"
                   value={formData.profession}
@@ -349,11 +445,11 @@ const Inscription = () => {
                   label="العنوان"
                   variant="outlined"
                   InputLabelProps={{
-    style: { 
-      fontSize: '1.1rem', // Taille augmentée
-      fontWeight: 'bold'  // Optionnel: pour plus de visibilité
-    }
-  }}
+                    style: { 
+                      fontSize: '1.1rem',
+                      fontWeight: 'bold'
+                    }
+                  }}
                   id="adresse"
                   name="adresse"
                   value={formData.adresse}
@@ -370,11 +466,11 @@ const Inscription = () => {
                   label="الهاتف"
                   variant="outlined"
                   InputLabelProps={{
-    style: { 
-      fontSize: '1.1rem', // Taille augmentée
-      fontWeight: 'bold'  // Optionnel: pour plus de visibilité
-    }
-  }}
+                    style: { 
+                      fontSize: '1.1rem',
+                      fontWeight: 'bold'
+                    }
+                  }}
                   id="phone"
                   name="phone"
                   value={formData.phone}
@@ -395,11 +491,11 @@ const Inscription = () => {
                       label="تاريخ التامين"
                       variant="outlined"
                       InputLabelProps={{
-    style: { 
-      fontSize: '1.1rem', // Taille augmentée
-      fontWeight: 'bold'  // Optionnel: pour plus de visibilité
-    }
-  }}
+                        style: { 
+                          fontSize: '1.1rem',
+                          fontWeight: 'bold'
+                        }
+                      }}
                       id="registration_date"
                       name="registration_date"
                       inputRef={assiranceDateRef}
@@ -416,11 +512,11 @@ const Inscription = () => {
                       label="التأمين"
                       variant="outlined"
                       InputLabelProps={{
-    style: { 
-      fontSize: '1.1rem', // Taille augmentée
-      fontWeight: 'bold'  // Optionnel: pour plus de visibilité
-    }
-  }}
+                        style: { 
+                          fontSize: '1.1rem',
+                          fontWeight: 'bold'
+                        }
+                      }}
                       id="assirance"
                       name="assirance"
                       value={formData.assirance}
@@ -435,33 +531,6 @@ const Inscription = () => {
                 </Grid>
               </Grid>
 
-              <Grid item xs={12} md={6}>
-                <TextField
-                  select
-                  label="نوع الرياضة"
-                  variant="outlined"
-                  InputLabelProps={{
-    style: { 
-      fontSize: '1.1rem', // Taille augmentée
-      fontWeight: 'bold'  // Optionnel: pour plus de visibilité
-    }
-  }}
-                  id="sport_type"
-                  name="sport_type"
-                  value={formData.sport_type}
-                  onChange={handleChange}
-                  required
-                  fullWidth
-                >
-                  <MenuItem value=""><em>اختر رياضة</em></MenuItem>
-                  {sportOptions.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              
               <Grid item xs={12} md={6}>
                 <TextField
                   label="المبلغ"

@@ -90,116 +90,156 @@ const handleViewDetails = async (user) => {
     const printWindow = window.open('', '_blank');
     
     printWindow.document.write(`
-       <html dir="rtl">
-      <head>
-        <style>
-  @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
-  
-  body { 
-    font-family: 'Tajawal', Arial, sans-serif; 
-    margin: 0; 
-    padding: 10px; 
-    color: #333;
-    background-color: white;
-  }
-  
-  .receipt { 
-    max-width: 100%; 
-    margin: 0; 
-    padding: 15px; 
-    border-bottom: 1px dashed #ccc;
-    background-color: white;
-  }
-  
-  .header { 
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px; 
-    padding-bottom: 10px; 
-    border-bottom: 1px solid #1a5fb4; 
-  }
-  
-  .logo {
-    width: 60px;
-    height: 60px;
-    margin-left: 15px;
-  }
-  
-  .header-text {
-    flex: 1;
-  }
-  
-  .gym-name {
-    color: #1a5fb4;
-    margin: 0 0 5px 0;
-    font-size: 18px;
-  }
-  
-  .receipt-number {
-    font-size: 16px;
-    color: #333;
-    margin: 0 0 5px 0;
-  }
-  
-  .print-date {
-    font-size: 12px;
-    color: #666;
-    margin: 0;
-  }
-  
-  .content { 
-    display: flex;
-    flex-wrap: wrap;
-    margin: 10px 0; 
-  }
-  
-  .row { 
-    width: 50%;
-    margin: 5px 0; 
-    font-size: 14px;
-  }
-  
-  .label {
-    font-weight: 700;
-    color: #1a5fb4;
-    margin-left: 5px;
-  }
-  
-  .value {
-    font-weight: 500;
-  }
-  
-  .footer {
-    text-align: center;
-    margin-top: 10px;
-    font-size: 12px;
-    color: #666;
-  }
-</style>
-      </head>
-      <body>
-  <div class="receipt">
-    <div class="header">
-      <img src=${logo} alt="نادي اللياقة البدنية" class="logo">
-      <div class="header-text">
-        <h1 class="gym-name">جمعية النصر سايس للرياضة</h1>
-        <p class="print-date">تاريخ الطباعة: ${formatDate(new Date())}</p>
-      </div>
+       <!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>إيصال الدفع</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 10px;
+      max-width: 500px;
+      margin: 0 auto;
+      background-color: #fff;
+    }
+    .header {
+      display: flex;
+      margin-bottom: 0px;
+      padding-bottom: 0px;
+      gap: 10px;
+    }
+    .logo-container {
+      flex-shrink: 0;
+    }
+    .logo {
+      max-width: 80px;
+      max-height: 80px;
+      border: 1px solid #ddd;
+      padding: 2px;
+    }
+    .header-text {
+      flex-grow: 1;
+      text-align: right;
+    }
+    .association-name {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #000;
+    }
+    .association-name-french {
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 5px;
+    }
+    .address {
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 5px;
+      line-height: 1.4;
+    }
+    .section {
+      margin-bottom: 0px;
+    }
+    .section-title {
+      font-weight: bold;
+ text-align: center;
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+    .payment-info {
+      text-align: center;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+    .amount {
+      
+      font-size: 16px;
+      color: #000;
+    }
+    .details {
+     
+    }
+    .detail-row {
+      margin-bottom: 10px;
+    }
+    .detail-label {
+      font-weight: bold;
+      display: inline-block;
+      min-width: 120px;
+    }
+    .detail-value {
+      display: inline;
+      margin-right: 10px;
+    }
+    .signature {
+      margin-top: 30px;
+      text-align: left;
+      font-size: 12px;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 10px;
+      color: #666;
+    }
+
+    @media print {
+      body {
+        padding: 0;
+      }
+      .no-print {
+        display: none;
+      }
+      @page {
+        size: auto;
+        margin: 5mm;
+      }
+      .details {
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo-container">
+      <img src="${logo}" class="logo" alt="Logo Association">
     </div>
-    <div class="content">
-      <div class="row"><span class="label">رقم العضو:</span> <span class="value">${userData.id}</span></div>
-      <div class="row"><span class="label">اسم العضو:</span> <span class="value">${userData.first_name} ${userData.last_name}</span></div>
-      <div class="row"><span class="label">الرياضة:</span> <span class="value">${userData.sport_type}</span></div>
-      <div class="row"><span class="label">المبلغ:</span> <span class="value">${payment.price} درهم</span></div>
-      <div class="row"><span class="label">تاريخ البدء:</span> <span class="value">${formatDate(payment.start_date)}</span></div>
-      <div class="row"><span class="label">تاريخ الانتهاء:</span> <span class="value">${formatDate(payment.end_date)}</span></div>
-    </div>
-    <div class="footer">
-      شكراً لاختياركم جمعية النصر سايس للرياضة
+    <div class="header-text">
+      <div class="association-name">جمعية النصر سابس للرياضة</div>
+      <div class="association-name-french">Association EL nasser saiss du Sport</div>
+      <div class="address">تجزئه ايمان رقم 1 حي السانيه طريق صفرو - قاس الهاتف: 06.67.18.53.51</div>
     </div>
   </div>
+  <div class="section">
+    <div class="section-title">${userData.sport_type}</div>
+  </div>
+  
+  <div class="details">
+    <span class="detail-label">الرقــــم :</span>
+    <span class="detail-value">${userData.id}</span>
+    <div class="detail-row">
+      <span class="detail-label">الاسم الكامل:</span>
+      <span class="detail-value">${userData.first_name} ${userData.last_name}</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">الثمن:</span>
+      <span class="detail-value amount">${userData.price} درهم</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">تاريخ الأداء :</span>
+      <span class="detail-value">${formatDate(payment.start_date)}</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">وصل الأداء من</span>
+      <span class="detail-value">${formatDate(payment.end_date)} إلى ${formatDate(payment.start_date)}</span>
+    </div>
+  </div>
+  
 </body>
-      </html>
+</html>
+
     `)
     
     printWindow.document.close();
