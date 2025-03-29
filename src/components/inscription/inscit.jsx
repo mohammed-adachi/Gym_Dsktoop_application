@@ -45,9 +45,9 @@ const Inscription = () => {
     photo: '',
     phone: '',
     registration_date: '',
-    assirance: 0,
+    assirance: '',
     sport_type: '',
-    price: 0,
+    price: '',
     start_date: '',
     end_date: '',
   });
@@ -99,13 +99,15 @@ const Inscription = () => {
     return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'price' || name === 'assirance' ? parseFloat(value) || 0 : value,
-    }));
-  };
+const handleChange = (e) => {
+  const { name, value } = e.target;
+  setFormData(prev => ({
+    ...prev,
+    [name]: (name === 'price' || name === 'assirance') ? 
+            (value === '' ? '' : value) : // Garde comme chaîne mais valide
+            value,
+  }));
+};
 
   const handlePhotoChange = (e) => {
     const file = e.target.files?.[0];
@@ -120,45 +122,56 @@ const Inscription = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  e.preventDefault();
+   if (!formData.id || formData.id.trim() === '') {
+    alert('يرجى إدخال رقم العضوية');
+    return;
+  }
+  //   if (!formData.date_naissance === '') {
+  //   alert('يرجى إدخال تاريخ الازدياد');
+  //   return;
+  // }
+  setIsSubmitting(true);
+  
+  try {
+    const updatedFormData = {
+      ...formData,
+      assirance: formData.assirance === '' ? 0 : parseFloat(formData.assirance),
+      price: formData.price === '' ? 0 : parseFloat(formData.price),
+      end_date: formData.start_date ? add30Days(formData.start_date) : '',
+    };
     
-    try {
-      const updatedFormData = {
-        ...formData,
-        end_date: formData.start_date ? add30Days(formData.start_date) : '',
-      };
-      
-      await invoke('add_new_user', { user: updatedFormData });
-      alert('تم التسجيل بنجاح !');
-      // Reset form and go back to sport selection
-      setFormData({
-        id: '',
-        last_name: '',
-        first_name: '',
-        date_naissance: '',
-        cin: '',
-        profession: '',
-        adresse: '',
-        photo: '',
-        phone: '',
-        registration_date: '',
-        assirance: 0,
-        sport_type: selectedSport,
-        price: 0,
-        start_date: '',
-        end_date: '',
-      });
-      setPreviewImage(null);
-      setShowForm(false);
-      setSelectedSport(null);
-    } catch (error) {
-      console.error('Erreur:', error);
-      alert('لقد حدث خطأ.');
-    } finally {
-      setIsSubmitting(false);
+    // Vérification des nombres
+    if (isNaN(updatedFormData.assirance) || isNaN(updatedFormData.price)) {
+      throw new Error("Les montants doivent être des nombres valides");
     }
-  };
+
+    await invoke('add_new_user', { 
+      user: {
+        ...updatedFormData,
+        assirance: updatedFormData.assirance,
+        price: updatedFormData.price
+      } 
+    });
+    
+    alert('تم التسجيل بنجاح !');
+    // Reset form
+    setFormData({
+      // ... autres champs
+      assirance: '',
+      price: '',
+      // ... autres champs
+    });
+    setPreviewImage(null);
+    setShowForm(false);
+    setSelectedSport(null);
+  } catch (error) {
+    console.error('Erreur:', error);
+    alert(error.message || 'لقد حدث خطأ.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const handleSportSelect = (sport) => {
     setSelectedSport(sport);
@@ -316,6 +329,7 @@ const Inscription = () => {
                 fullWidth
                 label="رقم العضوية"
                 variant="outlined"
+                required
                 InputLabelProps={{
                   style: { 
                     fontSize: '1.1rem',
@@ -326,7 +340,6 @@ const Inscription = () => {
                 name="id"
                 value={formData.id}
                 onChange={handleChange}
-                required
                 InputProps={{
                   startAdornment: <FaIdCard className="mr-2 text-gray-500" />,
                 }}
@@ -391,6 +404,7 @@ const Inscription = () => {
                   inputRef={dateNaissanceRef}
                   value={formData.date_naissance}
                   onChange={handleChange}
+                  required
                   fullWidth
                   InputProps={{
                     startAdornment: <FaBirthdayCake className="mr-2 text-gray-500" />,
@@ -499,7 +513,6 @@ const Inscription = () => {
                       id="registration_date"
                       name="registration_date"
                       inputRef={assiranceDateRef}
-                      value={formData.registration_date}
                       onChange={handleChange}
                       fullWidth
                       InputProps={{
@@ -522,6 +535,13 @@ const Inscription = () => {
                       value={formData.assirance}
                       onChange={handleChange}
                       type="number"
+                       inputProps={{
+    step: "0.01",
+    min: "0"
+  }}
+  error={formData.assirance !== '' && isNaN(parseFloat(formData.assirance))}
+  helperText={formData.assirance !== '' && isNaN(parseFloat(formData.assirance)) ? 
+              "يجب إدخال رقم صحيح" : ""}
                       fullWidth
                       InputProps={{
                         startAdornment: <FaMoneyBillWave className="mr-2 text-gray-500" />,
@@ -537,7 +557,7 @@ const Inscription = () => {
                   variant="outlined"
                   id="price"
                   name="price"
-                  value={formData.price}
+                  value={formData.price === 0 ? '' : formData.price}
                   onChange={handleChange}
                   type="number"
                   required

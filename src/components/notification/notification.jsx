@@ -133,113 +133,138 @@ const formatDate = (dateString) => {
     };
 
     const receiptHTML = `
-        <!DOCTYPE html>
+       <!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
   <meta charset="UTF-8">
   <title>إيصال الدفع</title>
   <style>
+    @page {
+      size: 110mm 55mm; /* Dimensions exactes du reçu */
+      margin: 2mm; /* Marges réduites */
+    }
+    
     body {
       font-family: Arial, sans-serif;
-      padding: 10px;
-      max-width: 500px;
+      padding: 5px;
+      width: 100mm; /* 17 cm */
+      height: 50mm; /* 9 cm */
       margin: 0 auto;
+      border: 3px solid black;
       background-color: #fff;
+      box-sizing: border-box;
+       position: relative;
+       overflow: hidden; /* Empêche tout débordement */
     }
+    
     .header {
       display: flex;
-      margin-bottom: 0px;
+      margin-bottom: 5px;
       padding-bottom: 0px;
-      gap: 10px;
+      gap: 5px;
+      direction: rtl;
     }
+    
     .logo-container {
       flex-shrink: 0;
     }
+    
     .logo {
-      max-width: 80px;
-      max-height: 80px;
+      max-width: 60px; /* Réduit pour s'adapter */
+      max-height: 60px;
       border: 1px solid #ddd;
-      padding: 2px;
+      padding: 1px;
     }
+    
     .header-text {
       flex-grow: 1;
       text-align: right;
     }
+    
     .association-name {
-      font-size: 18px;
+      font-size: 14px; /* Taille réduite */
       font-weight: bold;
-      margin-bottom: 5px;
+      margin-bottom: 3px;
       color: #000;
     }
+    
     .association-name-french {
-      font-size: 14px;
-      color: #333;
-      margin-bottom: 5px;
-    }
-    .address {
       font-size: 12px;
-      color: #555;
-      margin-bottom: 5px;
-      line-height: 1.4;
+      color: #333;
+      margin-bottom: 3px;
     }
-    .section {
-      margin-bottom: 0px;
+    
+    .address {
+      font-size: 10px;
+      color: #555;
+      margin-bottom: 3px;
+      line-height: 1.2;
+    }
+    .section-phone {
+      margin: 5px 0;
+      left: 10px;
+      font-size: 10px;
     }
     .section-title {
-      font-weight: bold;
- text-align: center;
-      margin-bottom: 8px;
-      font-size: 16px;
+        position: absolute;
+  left: 50%;
+   padding: 5px 10px;
+  transform: translateX(-50%); /* Centre parfaitement */
+  font-weight: bold;
+  font-size: 14px;
+  margin: -12px 0;
+
+  width: max-content; /* Garde la largeur du contenu */
     }
-    .payment-info {
-      text-align: center;
-      font-size: 14px;
-      margin-bottom: 5px;
-    }
-    .amount {
-      
-      font-size: 16px;
-      color: #000;
-    }
-    .details {
-     
-    }
+  .details{
+  Padding :10px;
+  }
+    
     .detail-row {
-      margin-bottom: 10px;
+      margin-bottom: 5px;
+      font-size: 12px;
     }
+    
     .detail-label {
       font-weight: bold;
       display: inline-block;
-      min-width: 120px;
+      min-width: 90px; /* Largeur réduite */
     }
+    
     .detail-value {
       display: inline;
-      margin-right: 10px;
     }
+    
+    .amount {
+      font-weight: bold;
+    }
+    
     .signature {
-      margin-top: 30px;
-      text-align: left;
-      font-size: 12px;
-    }
-    .footer {
-      text-align: center;
-      margin-top: 20px;
+      margin-top: 10px;
       font-size: 10px;
-      color: #666;
     }
 
     @media print {
       body {
         padding: 0;
+
+        width: 105mm !important;
+        height: 50mm !important;
       }
+      
       .no-print {
-        display: none;
-      }
-      @page {
-        size: auto;
-        margin: 5mm;
-      }
-      .details {
+ display: none !important;
+      position: absolute !important;
+      left: -9999px !important;
+      height: 0 !important;
+      width: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;      }
+      
+      /* Supprime tout espace blanc autour */
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
       }
     }
   </style>
@@ -252,16 +277,18 @@ const formatDate = (dateString) => {
     <div class="header-text">
       <div class="association-name">جمعية النصر سابس للرياضة</div>
       <div class="association-name-french">Association EL nasser saiss du Sport</div>
-      <div class="address">تجزئه ايمان رقم 1 حي السانيه طريق صفرو - قاس الهاتف: 06.67.18.53.51</div>
+      <div class="address">تجزئه ايمان رقم 1 حي السانيه طريق صفرو - قاس </div>
+      <div class="section-phone">الهاتف: 06.67.18.53.51</div>
     </div>
   </div>
-  <div class="section">
-    <div class="section-title">${client.id}</div>
-  </div>
+  
+  <div class="section-title">${client.sport_type}</div>
   
   <div class="details">
-    <span class="detail-label">الرقــــم :</span>
-    <span class="detail-value">${client.id}</span>
+    <div class="detail-row">
+      <span class="detail-label">الرقــــم :</span>
+      <span class="detail-value">${client.id}</span>
+    </div>
     <div class="detail-row">
       <span class="detail-label">الاسم الكامل:</span>
       <span class="detail-value">${client.name}</span>
@@ -280,26 +307,27 @@ const formatDate = (dateString) => {
     </div>
   </div>
   
-  <!-- Contenu à ne pas imprimer -->
-  <div class="no-print" style="text-align: center; margin-top: 20px;">
+  <div class="no-print" style="text-align: center; margin-top: 10px;">
     <button onclick="window.print()" style="
-      padding: 10px 20px;
+      padding: 8px 15px;
       background: #4CAF50;
       color: white;
       border: none;
       border-radius: 4px;
       cursor: pointer;
       margin-right: 10px;
+      font-size: 12px;
     ">
       طباعة الإيصال
     </button>
     <button onclick="window.close()" style="
-      padding: 10px 20px;
+      padding: 8px 15px;
       background: #f44336;
       color: white;
       border: none;
       border-radius: 4px;
       cursor: pointer;
+      font-size: 12px;
     ">
       إغلاق
     </button>

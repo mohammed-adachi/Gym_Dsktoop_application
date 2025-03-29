@@ -591,7 +591,7 @@ const Lists = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer ce membre ?")) {
+    if (!confirm("هل أنت متأكد أنك تريد حذف هذا العضو؟")) {
       return;
     }
     
