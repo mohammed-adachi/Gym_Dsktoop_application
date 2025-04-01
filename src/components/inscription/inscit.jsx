@@ -211,39 +211,39 @@ const handleChange = (e) => {
           </div>
 
           {/* Sélection des sports */}
-          <div className="p-6">
+          <div className="p-4">
             <Typography variant="h6" gutterBottom className="text-gray-700 mb-6">
               الرجاء اختيار نوع الرياضة التي تريد تسجيل العضو فيها
             </Typography>
 
-            <Grid container spacing={3} justifyContent="center">
-              {sportOptions.map((sport) => (
-                <Grid item xs={12} sm={6} md={4} key={sport.value}>
-                  <SportCard>
-                    <CardActionArea onClick={() => handleSportSelect(sport.value)}>
-                      <CardContent>
-                        <div className="text-4xl mb-4 text-red-600">
-                          {sport.icon}
-                        </div>
-                        <Typography variant="h5" component="div">
-                          {sport.label}
-                        </Typography>
-                        <div className="mt-4 flex justify-center">
-                          <Button
-                            variant="outlined"
-                            color="primary"
-                            endIcon={<FaArrowRight />}
-                          >
-                            اختر
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </CardActionArea>
-                  </SportCard>
-                </Grid>
-              ))}
-            </Grid>
-          </div>
+           <div className="flex overflow-x-auto pb-4 space-x-4 px-2" style={{ scrollbarWidth: 'thin' }}>
+    {sportOptions.map((sport) => (
+      <div key={sport.value} className="flex-shrink-0" style={{ width: '120px' }}>
+        <SportCard>
+          <CardActionArea onClick={() => handleSportSelect(sport.value)}>
+            <CardContent className="flex flex-col items-center p-3">
+              <div className="text-3xl text-red-600 mb-2">
+                {sport.icon}
+              </div>
+              <Typography variant="h6" component="div" className="text-center">
+                {sport.label}
+              </Typography>
+              <Button
+                variant="outlined"
+                size="small"
+                color="primary"
+                endIcon={<FaArrowRight />}
+                className="mt-2"
+              >
+                اختر
+              </Button>
+            </CardContent>
+          </CardActionArea>
+        </SportCard>
+      </div>
+    ))}
+  </div>
+</div>
         </StyledPaper>
       </motion.div>
     );

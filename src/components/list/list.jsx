@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Trash2, Eye, UserPlus, X, RefreshCw, AlertTriangle, CheckCircle, Edit } from 'lucide-react';
+import { Search, Trash2, Eye, UserPlus, X, RefreshCw, AlertTriangle, CheckCircle, Edit, Printer } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 import { User, Calendar, CreditCard, Briefcase, MapPin, Phone, Clock, Award } from 'lucide-react';
 
@@ -177,6 +177,7 @@ const Modal = ({ isOpen, onClose, user }) => {
     </div>
   );
 };
+
 const EditModal = ({ isOpen, onClose, user, onSubmit }) => {
   const [formData, setFormData] = useState(user);
   const [photoPreview, setPhotoPreview] = useState(user.photo || '');
@@ -467,6 +468,7 @@ const Lists = () => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedSport, setSelectedSport] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -526,24 +528,112 @@ const Lists = () => {
     setStatusFilter(e.target.value);
   };
 
+  const handleSportFilterChange = (e) => {
+    setSelectedSport(e.target.value);
+  };
+
   const isSubscriptionActive = (endDate) => {
-  if (!endDate) return false;
-  
-  try {
-    // Nettoyer la date si elle contient du texte
-    const cleanedDate = endDate.replace('انتهى في: ', '').trim();
+    if (!endDate) return false;
     
-    // Convertir DD/MM/YYYY en Date object
-    const [day, month, year] = cleanedDate.split('/');
-    const dateObj = new Date(`${year}/${month}/${day}`);
-    
-    // Vérifier si la date est valide et non expirée
-    return !isNaN(dateObj.getTime()) && dateObj > new Date();
-  } catch (error) {
-    console.error('Error parsing date:', error);
-    return false;
-  }
-};
+    try {
+      // Nettoyer la date si elle contient du texte
+      const cleanedDate = endDate.replace('انتهى في: ', '').trim();
+      
+      // Convertir DD/MM/YYYY en Date object
+      const [day, month, year] = cleanedDate.split('/');
+      const dateObj = new Date(`${year}/${month}/${day}`);
+      
+      // Vérifier si la date est valide et non expirée
+      return !isNaN(dateObj.getTime()) && dateObj > new Date();
+    } catch (error) {
+      console.error('Error parsing date:', error);
+      return false;
+    }
+  };
+
+  const printCommittedMembers = () => {
+    const committedMembers = users.filter(user => 
+      user.statut && (selectedSport === 'all' || user.sport_type === selectedSport)
+    );
+
+    if (committedMembers.length === 0) {
+      showNotification('لا يوجد أعضاء ملتزمين للرياضة المحددة', 'info');
+      return;
+    }
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html dir="rtl" lang="ar">
+      <head>
+        <meta charset="UTF-8">
+        <title>قائمة الأعضاء الملتزمين - ${selectedSport === 'all' ? 'جميع الرياضات' : selectedSport}</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; }
+          h1, h2 { text-align: center; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+          th { background-color: #f2f2f2; }
+          .header { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
+          .logo { max-width: 100px; height: auto; margin-bottom: 10px; }
+          @media print {
+            body { padding: 0; margin: 0; }
+            button { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>جمعية النصر سابس للرياضة</h1>
+          <h2>قائمة الأعضاء الملتزمين - ${selectedSport === 'all' ? 'جميع الرياضات' : selectedSport}</h2>
+          <p>تاريخ الطباعة: ${new Date().toLocaleDateString()}</p>
+          <p>عدد الأعضاء: ${committedMembers.length}</p>
+        </div>
+        
+        <table>
+          <thead>
+            <tr>
+              <th>الرقم</th>
+              <th>الاسم الكامل</th>
+              <th>نوع الرياضة</th>
+              <th>الهاتف</th>
+              <th>حالة الاشتراك</th>
+              <th>تاريخ الانتهاء</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${committedMembers.map(user => `
+              <tr>
+                <td>${user.id}</td>
+                <td>${user.first_name} ${user.last_name}</td>
+                <td>${user.sport_type}</td>
+                <td>${user.phone || 'غير محدد'}</td>
+                <td>${isSubscriptionActive(user.end_date) ? 'نشط' : 'منتهي'}</td>
+                <td>${user.end_date || 'غير محدد'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        
+        <div style="margin-top: 30px; text-align: center;">
+          <button onclick="window.print()" style="padding: 10px 15px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 5px;">
+            طباعة
+          </button>
+          <button onclick="window.close()" style="padding: 10px 15px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 5px;">
+            إغلاق
+          </button>
+        </div>
+        
+        <script>
+          window.onload = function() {
+            setTimeout(() => { window.print(); }, 500);
+          };
+        </script>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
 
   const handleViewDetails = async (user) => {
     try {
@@ -624,7 +714,7 @@ const Lists = () => {
       price: 100,
       start_date: new Date().toISOString().split('T')[0],
       end_date: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
-      statut: true // Valeur par défaut: ملتزم
+      statut: true
     };
 
     try {
@@ -728,7 +818,30 @@ const Lists = () => {
               <option value="committed">ملتزم</option>
               <option value="not_committed">غير ملتزم</option>
             </select>
+
+            <select
+              value={selectedSport}
+              onChange={handleSportFilterChange}
+              className="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            >
+              <option value="all">جميع الرياضات</option>
+              <option value="الأيروبيك">الأيروبيك</option>
+              <option value="الملاكمة">الملاكمة</option>
+              <option value="اللياقة البدنية">اللياقة البدنية</option>
+              <option value="التايكوندو">التايكوندو</option>
+              <option value="الفول كونتاكت">الفول كونتاكت</option>
+              <option value="كمال الأجسام">كمال الأجسام</option>
+            </select>
             
+            <button 
+              onClick={printCommittedMembers}
+              className="p-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-1"
+              title="طباعة الأعضاء الملتزمين"
+            >
+              <Printer className="h-5 w-5" />
+              <span className="hidden md:inline">طباعة الملتزمين</span>
+            </button>
+
             <button 
               onClick={handleAddUser} 
               className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-1"

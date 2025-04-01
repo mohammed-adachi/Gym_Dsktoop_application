@@ -47,7 +47,7 @@ const Header = () => {
   const menuItems = [
     { key: "الرئيسية", label: "الرئيسية", icon: HomeIcon},
     { key: "تسجيل جديد", label: "تسجيل جديد", icon: Users },
-    { key: "لوحة التحكم", label: "لوحة التحكم", icon: LayoutDashboard},
+    { key: "الاداء", label: "الاداء", icon: LayoutDashboard},
     { key: "قائمة العملاء", label: "قائمة العملاء", icon: List },
     { key: "رياضة", label: "الرياضة", icon: Dumbbell },
     { key: "إشعارات", label: "الإشعارات", icon: Bell},
@@ -70,7 +70,7 @@ const Header = () => {
         return <SportMembers />;
       case "إشعارات":
         return <Notification />;
-      case "لوحة التحكم":
+      case "الاداء":
         return <SportPaye />;
       default:
         return (
