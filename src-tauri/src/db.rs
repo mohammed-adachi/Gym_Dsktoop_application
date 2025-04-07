@@ -19,7 +19,7 @@ pub struct User {
     pub start_date: Option<String>,
     pub end_date: Option<String>,
     pub statut: Option<bool>, // Nouveau champ booléen optionnel
-
+    pub garde_date: Option<String>,
 }
 #[derive(Debug, Serialize, Deserialize,Clone)]
 pub struct UserHistory {
@@ -27,6 +27,7 @@ pub struct UserHistory {
     pub start_date: String,
     pub end_date: String,
     pub price: f64,
+    pub date_garde: Option<String>,
 }
 
 // Initialisation de la base de données
@@ -48,8 +49,8 @@ pub fn init_db(conn: &Connection) -> Result<()> {
             price REAL,
             start_date TEXT,
             end_date TEXT,
-            statut INTEGER DEFAULT 1  -- 1 = true par défaut
-
+            statut INTEGER DEFAULT 1 , -- 1 = true par défaut
+            garde_date TEXT
         )",
         [],
     )?;
@@ -66,6 +67,7 @@ pub fn init_db(conn: &Connection) -> Result<()> {
             start_date TEXT,
             end_date TEXT,
             price REAL,
+            date_garde TEXT,
             update_date TEXT DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id_user, id_history)
         )",
@@ -88,15 +90,13 @@ fn add_30_days(date_str: &str) -> Option<String> {
     }
 }
 
-
 // Insertion d'un utilisateur
 pub fn add_user(conn: &Connection, user: &User) -> Result<()> {
-   
     conn.execute(
         "INSERT INTO users (
             id, last_name, first_name, date_naissance, cin, profession, adresse, 
-            photo, phone, registration_date,assirance ,sport_type, price, start_date, end_date,statut
-        ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15,?16)",
+            photo, phone, registration_date, assirance, sport_type, price, start_date, end_date, statut,garde_date
+        ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16,?17)",
         params![
             user.id,
             user.last_name,
@@ -113,27 +113,31 @@ pub fn add_user(conn: &Connection, user: &User) -> Result<()> {
             user.price,
             user.start_date,
             user.end_date,
-             1i32, // Valeur pour statut (1 = true)
+            1i32, // Valeur pour statut (1 = true par défaut)
+            &user.start_date,
         ],
     )?;
-     conn.execute(
-        "INSERT INTO user_history (id_user, start_date, end_date, price) 
-        VALUES (?1, ?2, ?3, ?4)",
+     
+    conn.execute(
+        "INSERT INTO user_history (id_user, start_date, end_date, price, date_garde) 
+        VALUES (?1, ?2, ?3, ?4, ?5)",
         params![
             &user.id,
             &user.start_date,
             &user.end_date,
-            &user.price
+            &user.price,
+            &user.start_date // date_garde prend la valeur de start_date
         ],
     )?;
     Ok(())
 }
 
+
 // Récupération de tous les utilisateurs
 pub fn get_users(conn: &Connection) -> Result<Vec<User>> {
     let mut stmt = conn.prepare(
         "SELECT id, last_name, first_name, date_naissance, cin, profession, adresse, 
-        photo, phone, registration_date, sport_type, price, start_date, end_date,assirance,statut FROM users",
+        photo, phone, registration_date, sport_type, price, start_date, end_date,assirance,statut,garde_date FROM users",
     )?;
 
     let users = stmt
@@ -155,6 +159,8 @@ pub fn get_users(conn: &Connection) -> Result<Vec<User>> {
                 start_date: row.get(12)?,
                 end_date: row.get(13)?,
                 statut: row.get(15)?,
+                garde_date: row.get(16)?,
+
             })
         })?
         .collect::<Result<Vec<User>>>()?;
@@ -180,7 +186,8 @@ pub fn update_form_user(conn: &Connection, user: &User) -> Result<()> {
             start_date = ?14,
             end_date = ?15,
             statut = ?16
-        WHERE id = ?17",
+            grade_date = ?17
+        WHERE id = ?18",
         params![
             &user.id,
             user.last_name.as_ref(),
@@ -198,6 +205,7 @@ pub fn update_form_user(conn: &Connection, user: &User) -> Result<()> {
             user.start_date.as_ref(),
             user.end_date.as_ref(),
             user.statut.map(|b| b as i32), // Convertit Option<bool> en Option<i32>
+            &user.start_date, // date_garde prend la valeur de start_date
             &user.id // ID original pour la condition WHERE
         ],
     )?;
@@ -234,8 +242,9 @@ pub fn update_all_user_fields(conn: &Connection, old_id: &str, new_user: &User) 
             price = ?13,
             start_date = ?14,
             end_date = ?15,
-            statut = ?16
-        WHERE id = ?17",
+            statut = ?16,
+            garde_date = ?17
+        WHERE id = ?18",
         params![
             &new_user.id,
             new_user.photo.as_ref(),
@@ -253,6 +262,7 @@ pub fn update_all_user_fields(conn: &Connection, old_id: &str, new_user: &User) 
             new_user.start_date.as_ref(),
             new_user.end_date.as_ref(),
             new_user.statut.map(|b| b as i32),
+            new_user.start_date.as_ref(),
             old_id
         ],
     )?;
@@ -268,13 +278,14 @@ pub fn update_all_user_fields(conn: &Connection, old_id: &str, new_user: &User) 
     // Ajouter une entrée dans l'historique seulement si les dates ont changé
     if dates_changed {
         conn.execute(
-            "INSERT INTO user_history (id_user, start_date, end_date, price) 
-            VALUES (?1, ?2, ?3, ?4)",
+            "INSERT INTO user_history (id_user, start_date, end_date, price, date_garde) 
+            VALUES (?1, ?2, ?3, ?4, ?5)",
             params![
                 &new_user.id,
                 &new_user.start_date,
                 &new_user.end_date,
-                &new_user.price
+                &new_user.price,
+                &new_user.start_date // date_garde prend la valeur de start_date
             ],
         )?;
     }
@@ -299,8 +310,9 @@ pub fn update_user(conn: &Connection, user: &User) -> Result<()> {
             phone = COALESCE(?10, phone),
             registration_date = COALESCE(?11, registration_date),
             date_naissance = COALESCE(?12, date_naissance),
-            cin = COALESCE(?13, cin)
-        WHERE id = ?14",
+            cin = COALESCE(?13, cin),
+            garde_date = COALESCE(?14, garde_date)
+        WHERE id = ?15",
         (
             &user.start_date,
             &user.end_date,
@@ -315,6 +327,7 @@ pub fn update_user(conn: &Connection, user: &User) -> Result<()> {
             user.registration_date.as_ref(),
             user.date_naissance.as_ref(),
             user.cin.as_ref(),
+            user.garde_date.as_ref(),
             &user.id,
         ),
     )?;
@@ -325,7 +338,7 @@ pub fn update_user(conn: &Connection, user: &User) -> Result<()> {
             &user.id,
             &user.start_date,
             &user.end_date,
-            &user.price
+            &user.price,
         ],
     )?;
     Ok(())
@@ -339,7 +352,7 @@ pub fn delete_user(conn: &Connection, id: &str) -> Result<()> {
 pub fn get_userParId(conn: &Connection, id: &str) -> Result<User> {
     let mut stmt = conn.prepare(
         "SELECT id, last_name, first_name, date_naissance, cin, profession, adresse, 
-        photo, phone, registration_date, sport_type, price, start_date, end_date,assirance,statut FROM users WHERE id = ?1",
+        photo, phone, registration_date, sport_type, price, start_date, end_date,assirance,statut,garde_date FROM users WHERE id = ?1",
     )?;
 
     let user = stmt
@@ -361,6 +374,7 @@ pub fn get_userParId(conn: &Connection, id: &str) -> Result<User> {
                 start_date: row.get(12)?,
                 end_date: row.get(13)?,
                 statut: row.get(15)?,
+                garde_date: row.get(16)?,
             })
         })?
         .collect::<Result<Vec<User>>>()?;
@@ -368,7 +382,7 @@ pub fn get_userParId(conn: &Connection, id: &str) -> Result<User> {
 }
 pub fn user_histId(conn: &Connection, id: &str) -> Result<Vec<UserHistory>> {
     let mut stmt = conn.prepare(
-        "SELECT id_user, start_date, end_date, price FROM user_history WHERE id_user = ?1",
+        "SELECT id_user, start_date, end_date, price,date_garde FROM user_history WHERE id_user = ?1",
     )?;
 
     let user_histories = stmt
@@ -378,9 +392,19 @@ pub fn user_histId(conn: &Connection, id: &str) -> Result<Vec<UserHistory>> {
                 start_date: row.get(1)?,
                 end_date: row.get(2)?,
                 price: row.get(3)?,
+                date_garde: row.get(4)?,
+
             })
         })?
         .collect::<Result<Vec<UserHistory>>>()?;
 
     Ok(user_histories)
+}
+
+pub fn delete_payment(conn: &Connection, id_user: &str, start_date: &str) -> Result<()> {
+    conn.execute(
+        "DELETE FROM user_history WHERE id_user = ?1 AND start_date = ?2", 
+        params![id_user, start_date],
+    )?;
+    Ok(())
 }
