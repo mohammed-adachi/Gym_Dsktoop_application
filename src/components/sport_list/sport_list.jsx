@@ -39,6 +39,31 @@ const SportMembers = () => {
       console.error('Error fetching users:', error);
     }
   };
+  const handleDeletePayment = async (payment) => {
+  try {
+    const confirmed = window.confirm("هل أنت متأكد أنك تريد حذف هذه الدفعة؟");
+    if (!confirmed) return;
+    
+    await invoke("delete_payment_history", {
+      idUser: payment.id_user,
+      startDate: payment.start_date
+    });
+    
+    // Rafraîchir les données
+    const updatedPayments = await invoke("user_historyId", { 
+      id: selectedUser.userData.id 
+    });
+    
+    setSelectedUser(prev => ({
+      ...prev,
+      payments: updatedPayments
+    }));
+    
+  } catch (error) {
+    console.error("Error deleting payment:", error);
+    alert("حدث خطأ أثناء حذف الدفعة");
+  }
+};
 
 const handleViewDetails = async (user) => {
   try {
@@ -90,207 +115,222 @@ const handleViewDetails = async (user) => {
     const printWindow = window.open('', '_blank');
     
     printWindow.document.write(`
-  <!DOCTYPE html>
-<html dir="rtl" lang="ar">
-<head>
-  <meta charset="UTF-8">
-  <title>إيصال الدفع</title>
-  <style>
-    @page {
-      size: 110mm 55mm; /* Dimensions exactes du reçu */
-      margin: 2mm; /* Marges réduites */
-    }
-    
-    body {
-      font-family: Arial, sans-serif;
-      padding: 5px;
-      width: 100mm; /* 17 cm */
-      height: 50mm; /* 9 cm */
-      margin: 0 auto;
-      border: 3px solid black;
-      background-color: #fff;
-      box-sizing: border-box;
+ <!DOCTYPE html>
+ <html dir="rtl" lang="ar">
+ <head>
+   <meta charset="UTF-8">
+   <title>إيصال الدفع</title>
+   <style>
+     @page {
+       size: A4 portrait;
+       margin: 0 !important;
+       padding: 0 !important;
+     }
+     
+     body {
+       font-family: Calibri, sans-serif;
+       padding: 5px;
+       width: 230mm;
+       height: 130mm;
+       margin: 4 auto;
+       background-color: #fff;
+       box-sizing: border-box;
        position: relative;
-       overflow: hidden; /* Empêche tout débordement */
-    }
-    
-    .header {
-      display: flex;
-      margin-bottom: 5px;
-      padding-bottom: 0px;
-      gap: 5px;
-      direction: rtl;
-    }
-    
-    .logo-container {
-      flex-shrink: 0;
-    }
-    
-    .logo {
-      max-width: 60px; /* Réduit pour s'adapter */
-      max-height: 60px;
-      border: 1px solid #ddd;
-      padding: 1px;
-    }
-    
-    .header-text {
-      flex-grow: 1;
-      text-align: right;
-    }
-    
-    .association-name {
-      font-size: 14px; /* Taille réduite */
-      font-weight: bold;
-      margin-bottom: 3px;
-      color: #000;
-    }
-    
-    .association-name-french {
-      font-size: 12px;
-      color: #333;
-      margin-bottom: 3px;
-    }
-    
-    .address {
-      font-size: 10px;
-      color: #555;
-      margin-bottom: 3px;
-      line-height: 1.2;
-    }
-    .section-phone {
-      margin: 5px 0;
-      left: 10px;
-      font-size: 10px;
-    }
-    .section-title {
-        position: absolute;
-  left: 50%;
-   padding: 5px 10px;
-  transform: translateX(-50%); /* Centre parfaitement */
-  font-weight: bold;
-  font-size: 14px;
-  margin: -12px 0;
-
-  width: max-content; /* Garde la largeur du contenu */
-    }
-  .details{
-  Padding :10px;
-  }
-    
-    .detail-row {
-      margin-bottom: 5px;
-      font-size: 12px;
-    }
-    
-    .detail-label {
-      font-weight: bold;
-      display: inline-block;
-      min-width: 90px; /* Largeur réduite */
-    }
-    
-    .detail-value {
-      display: inline;
-    }
-    
-    .amount {
-      font-weight: bold;
-    }
-    
-    .signature {
-      margin-top: 10px;
-      font-size: 10px;
-    }
-
-    @media print {
-      body {
-        padding: 0;
-
-        width: 105mm !important;
-        height: 50mm !important;
-      }
-      
-      .no-print {
- display: none !important;
-      position: absolute !important;
-      left: -9999px !important;
-      height: 0 !important;
-      width: 0 !important;
-      padding: 0 !important;
-      margin: 0 !important;      }
-      
-      /* Supprime tout espace blanc autour */
-      html, body {
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <div class="logo-container">
-      <img src="${logo}" class="logo" alt="Logo Association">
-    </div>
-    <div class="header-text">
-      <div class="association-name">جمعية النصر سابس للرياضة</div>
-      <div class="association-name-french">Association EL nasser saiss du Sport</div>
-      <div class="address">تجزئه ايمان رقم 1 حي السانيه طريق صفرو - قاس </div>
-      <div class="section-phone">الهاتف: 06.67.18.53.51</div>
-    </div>
-  </div>
-  
-  <div class="section-title">${userData.sport_type}</div>
-  
-  <div class="details">
-    <div class="detail-row">
-      <span class="detail-label">الرقــــم :</span>
-      <span class="detail-value">${userData.id}</span>
-    </div>
-    <div class="detail-row">
-      <span class="detail-label">الاسم الكامل:</span>
-      <span class="detail-value">${userData.first_name} ${userData.last_name}</span>
-    </div>
-    <div class="detail-row">
-      <span class="detail-label">الثمن:</span>
-      <span class="detail-value amount">${userData.price} درهم</span>
-    </div>
-    <div class="detail-row">
-      <span class="detail-label">تاريخ الأداء :</span>
-      <span class="detail-value">${formatDate(payment.start_date)}</span>
-    </div>
-    <div class="detail-row">
-      <span class="detail-label">وصل الأداء من</span>
-      <span class="detail-value">${formatDate(payment.end_date)} إلى ${formatDate(payment.start_date)}</span>
-    </div>
-  </div>
-  
-  <div class="no-print" style="text-align: center; margin-top: 10px;">
-    <button onclick="window.print()" style="
-      padding: 8px 15px;
-      background: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-right: 10px;
-      font-size: 12px;
-    ">
-      طباعة الإيصال
-    </button>
-    <button onclick="window.close()" style="
-      padding: 8px 15px;
-      background: #f44336;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-    ">
-      إغلاق
-    </button>
-  </div>
-</body>
-</html>
+       overflow: hidden;
+     }
+     .booody{
+     border: 2px solid black;
+     }
+     .header {
+       display: flex;
+       margin-bottom: 5px;
+       padding-bottom: 0px;
+       gap: 5px;
+       direction: rtl;
+     }
+     
+     .logo-container {
+       flex-shrink: 0;
+       position: relative;
+       left: -15px
+     }
+     
+     .logo {
+       max-width: 100px;
+       max-height: 100px;
+       border: 2px solid #ddd;
+       padding: 2px;
+       border-radius: 50%;
+     }
+     
+     .association-name {
+       font-size: 40px;
+       font-weight: bold;
+       margin-bottom: 2px;
+       color: #000;
+       position: relative;
+       left: -100px
+     }
+     
+     .association-name-french {
+       font-size: 30px;
+       font-weight: bold;
+       margin-bottom: 2px;
+       color: #000;
+       position: relative;
+       left: -70px
+     }
+     
+     .address {
+       font-size: 20px;
+       color: #555;
+       margin-bottom: 3px;
+       line-height: 1.2;
+       position: relative;
+       left: -130px
+     }
+     .section-phone {
+       color: #555;
+       font-size: 20px;
+       margin: 2px 0;
+       position: relative;
+       left: -210px
+     }
+     .section-title {
+       font-size: 40px;
+       position: absolute;
+       left: 50%;
+       padding: 5px 10px;
+       transform: translateX(-50%);
+       font-weight: bold;
+       margin: -12px 0;
+       width: max-content;
+     }
+     .details{
+       position: relative;
+       left: -30px
+     }
+     
+     .detail-row {
+       margin-bottom: 10px;
+       font-size: 12px;
+     }
+     
+     .detail-label {
+       font-size: 30px;
+       font-weight: bold;
+       display: inline-block;
+       min-width: 90px;
+     }
+     
+     .detail-value {
+       display: inline;
+       font-size: 30px;
+     }
+     
+     .amount {
+       font-size: 30px;
+       font-weight: bold;
+     }
+     
+     .signature {
+       margin-top: 10px;
+       font-size: 10px;
+     }
+ 
+     @media print {
+       body {
+         padding: 3;
+         margin-top: 2000mm !important;
+         width: 210mm !important;
+         height: 120mm !important;
+       }
+       .receipt {
+         margin-top: 20mm !important;
+       }
+       
+       .no-print {
+         display: none !important;
+         position: absolute !important;
+         height: 0 !important;
+         width: 0 !important;
+         padding: 0 !important;
+         margin: 0 !important;
+       }
+       
+       html, body {
+         margin: 0 !important;
+         padding: 0 !important;
+       }
+     }
+   </style>
+ </head>
+ <body>
+ <div class="booody">
+   <div class="header">
+     <div class="logo-container">
+       <img src="${logo}" class="logo" alt="Logo Association">
+     </div>
+     <div class="header-text">
+       <div class="association-name">جمعية النصر سابس للرياضة</div>
+       <div class="association-name-french">Association EL nasser saiss du Sport</div>
+       <div class="address">تجزئه ايمان رقم 1 حي السانيه طريق صفرو - قاس </div>
+       <div class="section-phone">الهاتف: 06.67.18.53.51</div>
+     </div>
+   </div>
+   
+   <div class="section-title">${userData.sport_type}</div>
+   
+   <div class="details">
+     <div class="detail-row">
+       <span class="detail-label">الرقــــم :</span>
+       <span class="detail-value">${userData.id}</span>
+     </div>
+     <div class="detail-row">
+       <span class="detail-label">الاسم الكامل:</span>
+       <span class="detail-value">${userData.first_name} ${userData.last_name}</span>
+     </div>
+     <div class="detail-row">
+       <span class="detail-label">الثمن:</span>
+       <span class="detail-value amount">${userData.price} درهم</span>
+     </div>
+     <div class="detail-row">
+       <span class="detail-label">تاريخ الأداء :</span>
+       <span class="detail-value">${formatDate(payment.start_date)}</span>
+     </div>
+     <div class="detail-row">
+       <span class="detail-label">وصل الأداء من</span>
+       <span class="detail-value">${formatDate(payment.start_date)} إلى ${formatDate(payment.end_date)}</span>
+     </div>
+   </div>
+   </div>
+   <div class="no-print" style="text-align: center; margin-top: 10px;">
+     <button onclick="window.print()" style="
+       padding: 8px 15px;
+       background: #4CAF50;
+       color: white;
+       border: none;
+       border-radius: 4px;
+       cursor: pointer;
+       margin-right: 10px;
+       font-size: 12px;
+     ">
+       طباعة الإيصال
+     </button>
+     <button onclick="window.close()" style="
+       padding: 8px 15px;
+       background: #f44336;
+       color: white;
+       border: none;
+       border-radius: 4px;
+       cursor: pointer;
+       font-size: 12px;
+     ">
+       إغلاق
+     </button>
+   </div>
+ </body>
+ </html>
 
     `)
     
@@ -432,48 +472,57 @@ const handleViewDetails = async (user) => {
                 </button>
               </div>
               
-              <div className="mt-6 space-y-4">
-                {selectedUser.payments.length > 0 ? (
-                  selectedUser.payments.map((payment, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                      <div className="flex justify-between items-center mb-3">
-                        <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                          دفعة #{index + 1}
-                        </span>
-                        <span className="text-lg font-bold text-green-600">
-                          {payment.price} درهم
-                        </span>
-                      </div>
+            <div className="mt-6 space-y-4">
+  {selectedUser.payments.length > 0 ? (
+    [...selectedUser.payments]
+      .sort((a, b) => new Date(b.start_date) - new Date(a.start_date)) // Tri par date décroissante
+      .map((payment, index) => (
+        <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+          <div className="flex justify-between items-center mb-3">
+            <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+              دفعة #{selectedUser.payments.length - index} {/* Numéro inverse */}
+            </span>
+            <span className="text-lg font-bold text-green-600">
+              {payment.price} درهم
+            </span>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="text-gray-500">تاريخ البدء</p>
+              <p className="flex items-center mt-1">
+                <Calendar className="ml-1 text-gray-400" size={16} />
+                {formatDate(payment.start_date)}
+              </p>
+            </div>
+            
+            <div>
+              <p className="text-gray-500">تاريخ الانتهاء</p>
+              <p className="flex items-center mt-1">
+                <Calendar className="ml-1 text-gray-400" size={16} />
+                {formatDate(payment.end_date)}
+              </p>
+            </div>
+          </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <p className="text-gray-500">تاريخ البدء</p>
-                          <p className="flex items-center mt-1">
-                            <Calendar className="ml-1 text-gray-400" size={16} />
-                            {formatDate(payment.start_date)}
-                          </p>
-                        </div>
-                        
-                        <div>
-                          <p className="text-gray-500">تاريخ الانتهاء</p>
-                          <p className="flex items-center mt-1">
-                            <Calendar className="ml-1 text-gray-400" size={16} />
-                            {formatDate(payment.end_date)}
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-4 flex justify-end">
-                        <button
-                          onClick={() => handlePrintPayment(payment, index)}
-                          className="flex items-center bg-gray-800 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                          </svg>
-                          طباعة الإيصال
-                        </button>
-                      </div>
+                     <div className="mt-4 flex justify-end space-x-2">
+  <button
+    onClick={() => handlePrintPayment(payment, index)}
+    className="flex items-center bg-gray-800 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+    </svg>
+    طباعة الإيصال
+  </button>
+  <button
+    onClick={() => handleDeletePayment(payment)}
+    className="flex items-center bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
+  >
+    <X className="h-4 w-4 ml-1" />
+    حذف الدفعة
+  </button>
+</div>
                     </div>
                   ))
                 ) : (

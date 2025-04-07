@@ -110,7 +110,7 @@ const parseAnyDate = (dateStr) => {
     try {
       const users = await invoke('get_all_users');
       const expired = users.filter(user => {
-        return user.end_date && isPast(parseAnyDate(user.end_date));
+        return user.statut === true && user.end_date && isPast(parseAnyDate(user.end_date));
       });
       setExpiredClients(expired);
     } catch (error) {
@@ -283,8 +283,8 @@ const displayDate = (dateStr) => {
   <style>
     @page {
       size: A4 portrait;
-      margin: 0 !important;
-      padding: 0 !important;
+ margin: 5mm !important;
+       padding: 0 !important;
     }
     
     body {
@@ -324,7 +324,7 @@ const displayDate = (dateStr) => {
     }
     
     .association-name {
-      font-size: 40px;
+      font-size: 35px;
       font-weight: bold;
       margin-bottom: 2px;
       color: #000;
@@ -333,7 +333,7 @@ const displayDate = (dateStr) => {
     }
     
     .association-name-french {
-      font-size: 30px;
+      font-size: 25px;
       font-weight: bold;
       margin-bottom: 2px;
       color: #000;
@@ -342,7 +342,7 @@ const displayDate = (dateStr) => {
     }
     
     .address {
-      font-size: 20px;
+      font-size: 15px;
       color: #555;
       margin-bottom: 3px;
       line-height: 1.2;
@@ -351,13 +351,13 @@ const displayDate = (dateStr) => {
     }
     .section-phone {
       color: #555;
-      font-size: 20px;
+      font-size: 15px;
       margin: 2px 0;
       position: relative;
       left: -210px
     }
     .section-title {
-      font-size: 40px;
+      font-size: 35px;
       position: absolute;
       left: 50%;
       padding: 5px 10px;
@@ -372,12 +372,12 @@ const displayDate = (dateStr) => {
     }
     
     .detail-row {
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       font-size: 12px;
     }
     
     .detail-label {
-      font-size: 30px;
+      font-size: 25px;
       font-weight: bold;
       display: inline-block;
       min-width: 90px;
@@ -389,7 +389,7 @@ const displayDate = (dateStr) => {
     }
     
     .amount {
-      font-size: 30px;
+      font-size: 25px;
       font-weight: bold;
     }
     
@@ -400,9 +400,8 @@ const displayDate = (dateStr) => {
 
     @media print {
       body {
-        padding: 3;
-        margin-top: 2000mm !important;
-        width: 210mm !important;
+        padding: 0;
+        width: 230mm !important;
         height: 120mm !important;
       }
       .receipt {
@@ -549,47 +548,38 @@ const displayDate = (dateStr) => {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الرقم</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الاسم الكامل</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاريخ الميلاد</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاريخ الانخراط</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {getFilteredClients().map(client => (
-                    <tr key={client.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{client.id}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {client.first_name} {client.last_name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {displayDate(client.date_naissance)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {displayDate(client.garde_date)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex gap-2 justify-end">
-                          <button
-                            onClick={() => handleViewDetails(client)}
-                            className="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition flex items-center text-xs"
-                          >
-                            <Eye className="mr-1" size={12} />
-                            التفاصيل
-                          </button>
-                          <button
-                            onClick={() => handleEditMember(client)}
-                            className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition flex items-center text-xs"
-                          >
-                            <Edit className="mr-1" size={12} />
-                            تعديل
-                          </button>
-                          <button
+           <div className="overflow-x-auto">
+  <table className="min-w-full divide-y divide-gray-200">
+    <thead className="bg-gray-50">
+      <tr>
+        {/* Ordre inversé des colonnes */}
+        <th className="px-6 py-3 text-right text-xl font-medium text-gray-700 uppercase tracking-wider">الإجراءات</th>
+        <th className="px-6 py-3 text-right text-xl font-medium text-gray-700 uppercase tracking-wider">تاريخ الانخراط</th>
+        <th className="px-6 py-3 text-left text-xl font-medium text-gray-700 uppercase tracking-wider">الاسم الكامل</th>
+        <th className="px-6 py-3 text-right text-xl font-medium text-gray-700 uppercase tracking-wider">الرقم</th>
+      </tr>
+    </thead>
+    <tbody className="bg-white divide-y divide-gray-200">
+      {getFilteredClients().map(client => (
+        <tr key={client.id} className="hover:bg-gray-50">
+          {/* Même ordre que les en-têtes */}
+          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => handleViewDetails(client)}
+                className="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition flex items-center text-xs"
+              >
+                <Eye className="mr-1" size={12} />
+                التفاصيل
+              </button>
+              <button
+                onClick={() => handleEditMember(client)}
+                className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition flex items-center text-xs"
+              >
+                <Edit className="mr-1" size={12} />
+                تعديل
+              </button>
+                <button
                             onClick={() => {
                               setSelectedClient(client);
                               setFormData({
@@ -603,13 +593,22 @@ const displayDate = (dateStr) => {
                             <Calendar className="mr-1" size={12} />
                             الاداء
                           </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
+          </td>
+          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+            {displayDate(client.garde_date)}
+          </td>
+          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-left">
+            {client.first_name} {client.last_name}
+          </td>
+          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+            {client.id}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
           )}
         </div>
       ) : (
@@ -685,7 +684,8 @@ const displayDate = (dateStr) => {
                     />
                   </div>
   
-                  <div>
+                  <div className="hidden">
+
                     <label className="block text-sm font-medium text-gray-700 mb-1">تاريخ الانتهاء</label>
                     <input 
                       type="date" 
@@ -860,7 +860,7 @@ const displayDate = (dateStr) => {
                 />
                 <DetailBox 
                   icon={<Calendar className="h-5 w-5 text-blue-500" />}
-                  label="تاريخ البدء"
+                  label="تاريخ الاداء"
                   value={displayDate(selectedUser.start_date)}
                 />
                 <DetailBox 
@@ -891,8 +891,8 @@ const displayDate = (dateStr) => {
       animate={{ scale: 1, opacity: 1 }}
     >
       {/* En-tête avec dégradé de couleur */}
-      <div className="flex justify-between items-center p-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-xl">
-        <h2 className="text-2xl font-bold">تعديل العضو</h2>
+      <div className="flex justify-between items-center p-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-xl">
+        <h2 className="text-xl font-bold">تعديل العضو</h2>
         <button 
           onClick={() => setIsEditModalOpen(false)} 
           className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-all"
@@ -901,7 +901,7 @@ const displayDate = (dateStr) => {
         </button>
       </div>
       
-      <form onSubmit={handleEditSubmit} className="p-6">
+      <form onSubmit={handleEditSubmit} className="p-3">
         <div className="flex flex-col md:flex-row gap-8">
           {/* Colonne de gauche - Photo */}
           <div className="md:w-1/3">
@@ -941,7 +941,7 @@ const displayDate = (dateStr) => {
             </div>
             
             {/* Section statut */}
-            <div className="bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-200">
+            <div className="bg-gray-50 p-3 rounded-lg shadow-sm border border-gray-200">
               <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
                 <Award className="h-5 w-5 mr-2 text-blue-500" />
                 حالة العضوية
@@ -950,7 +950,7 @@ const displayDate = (dateStr) => {
                 name="statut"
                 value={editFormData.statut}
                 onChange={(e) => setEditFormData({...editFormData, statut: e.target.value === "true"})}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value={true}>ملتزم</option>
                 <option value={false}>غير ملتزم</option>
@@ -959,115 +959,115 @@ const displayDate = (dateStr) => {
           </div>
           
           {/* Colonne de droite - Formulaire */}
-          <div className="md:w-2/3">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div className="md:w-1/2">           
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {/* ID */}
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">الرقم</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">الرقم</label>
                 <input
                   type="text"
                   name="id"
                   value={editFormData.id}
                   onChange={handleEditChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                  className="w-full p-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
                   readOnly
                 />
               </div>
               
               {/* Prénom */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">الاسم الشخصي</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">الاسم الشخصي</label>
                 <input
                   type="text"
                   name="first_name"
                   value={editFormData.first_name}
                   onChange={handleEditChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
               </div>
               
               {/* Nom */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">الاسم العائلي</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">الاسم العائلي</label>
                 <input
                   type="text"
                   name="last_name"
                   value={editFormData.last_name}
                   onChange={handleEditChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
               </div>
               
               {/* Date de naissance */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">تاريخ الميلاد</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">تاريخ الميلاد</label>
                 <input
                   type="date"
                   name="date_naissance"
                   value={editFormData.date_naissance}
                   onChange={handleEditChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               
               {/* CIN */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">بطاقة الهوية</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">بطاقة الهوية</label>
                 <input
                   type="text"
                   name="cin"
                   value={editFormData.cin}
                   onChange={handleEditChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               
               {/* Profession */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">المهنة</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">المهنة</label>
                 <input
                   type="text"
                   name="profession"
                   value={editFormData.profession}
                   onChange={handleEditChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               
               {/* Adresse */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">العنوان</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">العنوان</label>
                 <input
                   type="text"
                   name="adresse"
                   value={editFormData.adresse}
                   onChange={handleEditChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               
               {/* Téléphone */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">الهاتف</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">الهاتف</label>
                 <input
                   type="tel"
                   name="phone"
                   value={editFormData.phone}
                   onChange={handleEditChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               
               {/* Type de sport */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">نوع الرياضة</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">نوع الرياضة</label>
                 <select
                   name="sport_type"
                   value={editFormData.sport_type}
                   onChange={handleEditChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {sports.map(sport => (
                     <option key={sport.name} value={sport.name}>{sport.name}</option>
@@ -1077,44 +1077,44 @@ const displayDate = (dateStr) => {
               
               {/* Prix */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">المبلغ (درهم)</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">المبلغ (درهم)</label>
                 <input
                   type="number"
                   name="price"
                   value={editFormData.price}
                   onChange={handleEditChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   min="0"
                 />
               </div>
               
               {/* Date de début */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">تاريخ الانخراط</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">تاريخ الانخراط</label>
                 <input
                   type="date"
                   name="start_date"
                   value={editFormData.start_date}
                   onChange={handleEditChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               
               {/* Date de fin */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">تاريخ الانتهاء</label>
+              <div className="hidden">
+                <label className="block text-xs font-medium text-gray-700 mb-1">تاريخ الانتهاء</label>
                 <input
                   type="date"
                   name="end_date"
                   value={editFormData.end_date}
                   onChange={handleEditChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                  className="w-full p-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
                   readOnly
                 />
               </div>
             </div>
             
-            <div className="mt-8 flex justify-end gap-4">
+            <div className="mt-8 flex justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setIsEditModalOpen(false)}

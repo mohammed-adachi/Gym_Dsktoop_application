@@ -254,11 +254,11 @@ const handleChange = (e) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="overflow-auto h-full bg-gray-50 p-4"
+      className="overflow-auto h-full bg-gray-50 p-1"
     >
-      <StyledPaper className="max-w-5xl mx-auto">
+      <StyledPaper className="max-w-4xl mx-auto">
         {/* En-tête avec bouton retour */}
-        <div className="bg-gradient-to-r from-red-600 to-red-800 p-6 text-white">
+        <div className="bg-gradient-to-r from-red-900 to-red-600 p-1 text-white">
           <div className="flex items-center justify-between">
             <Button 
               variant="outlined" 
@@ -271,29 +271,29 @@ const handleChange = (e) => {
             >
               العودة
             </Button>
-            <div className="flex items-center space-x-3">
-              <FaDumbbell className="text-2xl" />
-              <Typography variant="h4" component="h1" className="font-bold">
-                تسجيل عضو في {selectedSport}
-              </Typography>
-            </div>
+          <div className="flex items-center space-x-1 m-0 p-0">
+  <FaDumbbell className="text-lg" /> {/* Réduction de text-2xl à text-xl */}
+  <Typography variant="h6" component="h1" className="font-semibold"> {/* Réduction de h5 à h6 et font-bold à font-semibold */}
+    تسجيل عضو في {selectedSport}
+  </Typography>
+</div>
           </div>
         </div>
 
         {/* Contenu principal */}
-        <div className="p-6">
+        <div className="p-1">
           {/* Section photo et ID */}
-          <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-2">
             {/* Upload photo */}
-            <div className="flex flex-col items-center mb-6 md:mb-0">
+            <div className="flex flex-col items-center mb-2 md:mb-0">
               <div className="relative">
                 <Avatar
                   src={previewImage}
                   sx={{ 
                     width: 120, 
                     height: 120,
-                    border: '4px solid #e53e3e',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                    border: '3px solid #e53e3e',
+                    boxShadow: '0 4px 12px rgba(100,0,0,0.15)'
                   }}
                 >
                   <FaCamera className="text-4xl text-gray-400" />
@@ -324,7 +324,7 @@ const handleChange = (e) => {
             </div>
 
             {/* Numéro de membre */}
-            <div className="w-full md:w-1/4">
+            <div className="w-3/4 md:w-1/5">
               <TextField
                 fullWidth
                 label="رقم العضوية"
@@ -348,13 +348,14 @@ const handleChange = (e) => {
           </div>
 
           {/* Formulaire */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-0.5">
             <Grid container spacing={3}>
               {/* Informations personnelles */}
               <Grid item xs={12} md={6}>
                 <TextField
                   label="الاسم العائلي"
                   variant="outlined"
+                  size='small'
                   InputLabelProps={{
                     style: { 
                       fontSize: '1.1rem',
@@ -374,6 +375,7 @@ const handleChange = (e) => {
                 <TextField
                   label="الاسم الشخصي"
                   variant="outlined"
+                  size='small'
                   InputLabelProps={{
                     style: { 
                       fontSize: '1.1rem',
@@ -393,6 +395,7 @@ const handleChange = (e) => {
                 <TextField
                   label="تاريخ الازدياد"
                   variant="outlined"
+                  size='small'
                   InputLabelProps={{
                     style: { 
                       fontSize: '1.1rem',
@@ -416,6 +419,7 @@ const handleChange = (e) => {
                 <TextField
                   label="بطاقة الهوية"
                   variant="outlined"
+                  size='small'
                   InputLabelProps={{
                     style: { 
                       fontSize: '1.1rem',
@@ -437,6 +441,7 @@ const handleChange = (e) => {
                 <TextField
                   label="المهنة"
                   variant="outlined"
+                  size='small'
                   InputLabelProps={{
                     style: { 
                       fontSize: '1.1rem',
@@ -458,6 +463,7 @@ const handleChange = (e) => {
                 <TextField
                   label="العنوان"
                   variant="outlined"
+                  size='small'
                   InputLabelProps={{
                     style: { 
                       fontSize: '1.1rem',
@@ -479,6 +485,7 @@ const handleChange = (e) => {
                 <TextField
                   label="الهاتف"
                   variant="outlined"
+                  size='small'
                   InputLabelProps={{
                     style: { 
                       fontSize: '1.1rem',
@@ -504,6 +511,7 @@ const handleChange = (e) => {
                     <TextField
                       label="تاريخ التامين"
                       variant="outlined"
+                      size='small'
                       InputLabelProps={{
                         style: { 
                           fontSize: '1.1rem',
@@ -523,9 +531,11 @@ const handleChange = (e) => {
                   <Grid item xs={6}>
                     <TextField
                       label="التأمين"
+                      size='small'
                       variant="outlined"
                       InputLabelProps={{
                         style: { 
+                        
                           fontSize: '1.1rem',
                           fontWeight: 'bold'
                         }
@@ -557,6 +567,7 @@ const handleChange = (e) => {
                   variant="outlined"
                   id="price"
                   name="price"
+                  size="small"
                   value={formData.price === 0 ? '' : formData.price}
                   onChange={handleChange}
                   type="number"
@@ -572,6 +583,7 @@ const handleChange = (e) => {
               <Grid item xs={12} md={6}>
                 <TextField
                   label="تاريخ الانخراط"
+                  size='small'
                   variant="outlined"
                   id="start_date"
                   name="start_date"
@@ -592,7 +604,7 @@ const handleChange = (e) => {
                 type="submit"
                 variant="contained"
                 color="error"
-                size="large"
+                size="small"
                 startIcon={<FaUserPlus />}
                 disabled={isSubmitting}
                 sx={{

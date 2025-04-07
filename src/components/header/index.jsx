@@ -54,7 +54,7 @@ const Header = () => {
   ];
 
   const userData = {
-    name: "حميد الغزال",
+    name: " ",
     role: "مدير النظام",
     avatar: logo// C:\Users\DeLL\GYM\gym_app\src\images\logo.jpg
     //voici path index.jsx C:\Users\DeLL\GYM\gym_app\src\components\header\index.jsx

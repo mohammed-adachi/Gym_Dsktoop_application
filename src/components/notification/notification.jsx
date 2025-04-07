@@ -133,207 +133,222 @@ const formatDate = (dateString) => {
     };
 
     const receiptHTML = `
-       <!DOCTYPE html>
-<html dir="rtl" lang="ar">
-<head>
-  <meta charset="UTF-8">
-  <title>إيصال الدفع</title>
-  <style>
-    @page {
-      size: 110mm 55mm; /* Dimensions exactes du reçu */
-      margin: 2mm; /* Marges réduites */
-    }
-    
-    body {
-      font-family: Arial, sans-serif;
-      padding: 5px;
-      width: 100mm; /* 17 cm */
-      height: 50mm; /* 9 cm */
-      margin: 0 auto;
-      border: 3px solid black;
-      background-color: #fff;
-      box-sizing: border-box;
-       position: relative;
-       overflow: hidden; /* Empêche tout débordement */
-    }
-    
-    .header {
-      display: flex;
-      margin-bottom: 5px;
-      padding-bottom: 0px;
-      gap: 5px;
-      direction: rtl;
-    }
-    
-    .logo-container {
-      flex-shrink: 0;
-    }
-    
-    .logo {
-      max-width: 60px; /* Réduit pour s'adapter */
-      max-height: 60px;
-      border: 1px solid #ddd;
-      padding: 1px;
-    }
-    
-    .header-text {
-      flex-grow: 1;
-      text-align: right;
-    }
-    
-    .association-name {
-      font-size: 14px; /* Taille réduite */
-      font-weight: bold;
-      margin-bottom: 3px;
-      color: #000;
-    }
-    
-    .association-name-french {
-      font-size: 12px;
-      color: #333;
-      margin-bottom: 3px;
-    }
-    
-    .address {
-      font-size: 10px;
-      color: #555;
-      margin-bottom: 3px;
-      line-height: 1.2;
-    }
-    .section-phone {
-      margin: 5px 0;
-      left: 10px;
-      font-size: 10px;
-    }
-    .section-title {
-        position: absolute;
-  left: 50%;
-   padding: 5px 10px;
-  transform: translateX(-50%); /* Centre parfaitement */
-  font-weight: bold;
-  font-size: 14px;
-  margin: -12px 0;
-
-  width: max-content; /* Garde la largeur du contenu */
-    }
-  .details{
-  Padding :10px;
-  }
-    
-    .detail-row {
-      margin-bottom: 5px;
-      font-size: 12px;
-    }
-    
-    .detail-label {
-      font-weight: bold;
-      display: inline-block;
-      min-width: 90px; /* Largeur réduite */
-    }
-    
-    .detail-value {
-      display: inline;
-    }
-    
-    .amount {
-      font-weight: bold;
-    }
-    
-    .signature {
-      margin-top: 10px;
-      font-size: 10px;
-    }
-
-    @media print {
-      body {
-        padding: 0;
-
-        width: 105mm !important;
-        height: 50mm !important;
-      }
-      
-      .no-print {
- display: none !important;
-      position: absolute !important;
-      left: -9999px !important;
-      height: 0 !important;
-      width: 0 !important;
-      padding: 0 !important;
-      margin: 0 !important;      }
-      
-      /* Supprime tout espace blanc autour */
-      html, body {
+  <!DOCTYPE html>
+  <html dir="rtl" lang="ar">
+  <head>
+    <meta charset="UTF-8">
+    <title>إيصال الدفع</title>
+    <style>
+      @page {
+        size: A4 portrait;
         margin: 0 !important;
         padding: 0 !important;
       }
-    }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <div class="logo-container">
-      <img src="${logo}" class="logo" alt="Logo Association">
-    </div>
-    <div class="header-text">
-      <div class="association-name">جمعية النصر سابس للرياضة</div>
-      <div class="association-name-french">Association EL nasser saiss du Sport</div>
-      <div class="address">تجزئه ايمان رقم 1 حي السانيه طريق صفرو - قاس </div>
-      <div class="section-phone">الهاتف: 06.67.18.53.51</div>
-    </div>
-  </div>
+      
+      body {
+        font-family: Calibri, sans-serif;
+        padding: 5px;
+        width: 230mm;
+        height: 130mm;
+        margin: 4 auto;
+        background-color: #fff;
+        box-sizing: border-box;
+        position: relative;
+        overflow: hidden;
+      }
+      .booody{
+      border: 2px solid black;
+      }
+      .header {
+        display: flex;
+        margin-bottom: 5px;
+        padding-bottom: 0px;
+        gap: 5px;
+        direction: rtl;
+      }
+      
+      .logo-container {
+        flex-shrink: 0;
+        position: relative;
+        left: -15px
+      }
+      
+      .logo {
+        max-width: 100px;
+        max-height: 100px;
+        border: 2px solid #ddd;
+        padding: 2px;
+        border-radius: 50%;
+      }
+      
+      .association-name {
+        font-size: 40px;
+        font-weight: bold;
+        margin-bottom: 2px;
+        color: #000;
+        position: relative;
+        left: -100px
+      }
+      
+      .association-name-french {
+        font-size: 30px;
+        font-weight: bold;
+        margin-bottom: 2px;
+        color: #000;
+        position: relative;
+        left: -70px
+      }
+      
+      .address {
+        font-size: 20px;
+        color: #555;
+        margin-bottom: 3px;
+        line-height: 1.2;
+        position: relative;
+        left: -130px
+      }
+      .section-phone {
+        color: #555;
+        font-size: 20px;
+        margin: 2px 0;
+        position: relative;
+        left: -210px
+      }
+      .section-title {
+        font-size: 40px;
+        position: absolute;
+        left: 50%;
+        padding: 5px 10px;
+        transform: translateX(-50%);
+        font-weight: bold;
+        margin: -12px 0;
+        width: max-content;
+      }
+      .details{
+        position: relative;
+        left: -30px
+      }
+      
+      .detail-row {
+        margin-bottom: 10px;
+        font-size: 12px;
+      }
+      
+      .detail-label {
+        font-size: 30px;
+        font-weight: bold;
+        display: inline-block;
+        min-width: 90px;
+      }
+      
+      .detail-value {
+        display: inline;
+        font-size: 30px;
+      }
+      
+      .amount {
+        font-size: 30px;
+        font-weight: bold;
+      }
+      
+      .signature {
+        margin-top: 10px;
+        font-size: 10px;
+      }
   
-  <div class="section-title">${client.sport_type}</div>
-  
-  <div class="details">
-    <div class="detail-row">
-      <span class="detail-label">الرقــــم :</span>
-      <span class="detail-value">${client.id}</span>
+      @media print {
+        body {
+          padding: 3;
+          margin-top: 2000mm !important;
+          width: 210mm !important;
+          height: 120mm !important;
+        }
+        .receipt {
+          margin-top: 20mm !important;
+        }
+        
+        .no-print {
+          display: none !important;
+          position: absolute !important;
+          height: 0 !important;
+          width: 0 !important;
+          padding: 0 !important;
+          margin: 0 !important;
+        }
+        
+        html, body {
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+  <div class="booody">
+    <div class="header">
+      <div class="logo-container">
+        <img src="${logo}" class="logo" alt="Logo Association">
+      </div>
+      <div class="header-text">
+        <div class="association-name">جمعية النصر سابس للرياضة</div>
+        <div class="association-name-french">Association EL nasser saiss du Sport</div>
+        <div class="address">تجزئه ايمان رقم 1 حي السانيه طريق صفرو - قاس </div>
+        <div class="section-phone">الهاتف: 06.67.18.53.51</div>
+      </div>
     </div>
-    <div class="detail-row">
-      <span class="detail-label">الاسم الكامل:</span>
-      <span class="detail-value">${client.name}</span>
+    
+    <div class="section-title">${client.sport_type}</div>
+    
+    <div class="details">
+      <div class="detail-row">
+        <span class="detail-label">الرقــــم :</span>
+        <span class="detail-value">${client.id}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">الاسم الكامل:</span>
+        <span class="detail-value">${client.first_name} ${client.last_name}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">الثمن:</span>
+        <span class="detail-value amount">${amount}  درهم</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">تاريخ الأداء :</span>
+        <span class="detail-value">${formatReceiptDate(startDate)}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">وصل الأداء من</span>
+        <span class="detail-value">${formatReceiptDate(endDate)} إلى ${formatReceiptDate(startDate)}</span>
+      </div>
     </div>
-    <div class="detail-row">
-      <span class="detail-label">الثمن:</span>
-      <span class="detail-value amount">${amount} درهم</span>
     </div>
-    <div class="detail-row">
-      <span class="detail-label">تاريخ الأداء :</span>
-      <span class="detail-value">${formatReceiptDate(startDate)}</span>
+    <div class="no-print" style="text-align: center; margin-top: 10px;">
+      <button onclick="window.print()" style="
+        padding: 8px 15px;
+        background: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-right: 10px;
+        font-size: 12px;
+      ">
+        طباعة الإيصال
+      </button>
+      <button onclick="window.close()" style="
+        padding: 8px 15px;
+        background: #f44336;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+      ">
+        إغلاق
+      </button>
     </div>
-    <div class="detail-row">
-      <span class="detail-label">وصل الأداء من</span>
-      <span class="detail-value">${formatReceiptDate(endDate)} إلى ${formatReceiptDate(startDate)}</span>
-    </div>
-  </div>
-  
-  <div class="no-print" style="text-align: center; margin-top: 10px;">
-    <button onclick="window.print()" style="
-      padding: 8px 15px;
-      background: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-right: 10px;
-      font-size: 12px;
-    ">
-      طباعة الإيصال
-    </button>
-    <button onclick="window.close()" style="
-      padding: 8px 15px;
-      background: #f44336;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-    ">
-      إغلاق
-    </button>
-  </div>
-</body>
-</html>
+  </body>
+  </html>
 
     `;
 
